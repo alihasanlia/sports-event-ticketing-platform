@@ -1,27 +1,115 @@
 package com.playtix.sports_event_ticketing_platform.domain.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import com.playtix.sports_event_ticketing_platform.domain.entity.tournament.Tournament;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "sports")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Sport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @EqualsAndHashCode.Include
+    @Builder.Default
+    private UUID id = UUID.randomUUID();
 
-    @Column(nullable = false)
-    private String name;
+    @NotNull(message = "Sport type is required")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, unique = true)
+    private SportType name;
 
+    @Column(length = 500)
+    private String description;
+
+    @Column(name = "number_of_players")
+    private Integer numberOfPlayers;
+
+    @OneToMany(mappedBy = "sport", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<League> leagues = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sport", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Tournament> tournaments = new ArrayList<>();
+
+    public void addLeague(League league) {
+        if (league != null && !leagues.contains(league)) {
+            leagues.add(league);
+            league.setSport(this);
+        }
+    }
+
+    public void removeLeague(League league) {
+        if (league != null && leagues.remove(league)) {
+            league.setSport(null);
+        }
+    }
+
+    public void addTournament(Tournament tournament) {
+        if (tournament != null && !tournaments.contains(tournament)) {
+            tournaments.add(tournament);
+            tournament.setSport(this);
+        }
+    }
+
+    public void removeTournament(Tournament tournament) {
+        if (tournament != null && tournaments.remove(tournament)) {
+            tournament.setSport(null);
+        }
+    }
+
+    public int getLeaguesCount() {
+        return leagues != null ? leagues.size() : 0;
+    }
+
+    public int getTournamentsCount() {
+        return tournaments != null ? tournaments.size() : 0;
+    }
+
+    public boolean hasLeagues() {
+        return leagues != null && !leagues.isEmpty();
+    }
+
+    public boolean hasTournaments() {
+        return tournaments != null && !tournaments.isEmpty();
+    }
+
+    @Override
+    public String toString() {
+        return "Sport{" +
+                "id=" + id +
+                ", name=" + name +
+                ", description='" + description + '\'' +
+                ", leaguesCount=" + getLeaguesCount() +
+                ", tournamentsCount=" + getTournamentsCount() +
+                '}';
+    }
+    
 }

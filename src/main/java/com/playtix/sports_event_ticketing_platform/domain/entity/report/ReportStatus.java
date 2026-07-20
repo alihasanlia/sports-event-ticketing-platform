@@ -2,7 +2,10 @@ package com.playtix.sports_event_ticketing_platform.domain.entity.report;
 
 public enum ReportStatus {
 
-    REVIEWED,
+    RESOLVED,
+    IN_PROGRESS,
+    REJECTED,
+    REOPENED,
     PENDING
     
 }
