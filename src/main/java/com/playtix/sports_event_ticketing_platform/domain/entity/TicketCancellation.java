@@ -47,7 +47,7 @@ public class TicketCancellation {
     @Min(value = 0, message = "Penalty percent cannot be negative")
     @Max(value = 100, message = "Penalty percent cannot exceed 100")
     @Column(name = "penalty_percent", nullable = false, updatable = false)
-    private Integer penaltyPercent;
+    private int penaltyPercent;
 
     @NotNull(message = "Refund amount is required")
     @PositiveOrZero(message = "Refund amount must be positive or zero")

@@ -49,7 +49,7 @@ public class Sport {
     private String description;
 
     @Column(name = "number_of_players")
-    private Integer numberOfPlayers;
+    private int numberOfPlayers;
 
     @OneToMany(mappedBy = "sport", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
