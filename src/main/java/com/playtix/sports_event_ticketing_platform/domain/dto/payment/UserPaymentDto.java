@@ -15,7 +15,5 @@ public record UserPaymentDto(
     PaymentStatus status,
     String transactionId,
     String bankReceiptNumber,
-    String cardMask,
-    String relatedReservation,
-    boolean isSuccessful
+    String eventName
 ) {}

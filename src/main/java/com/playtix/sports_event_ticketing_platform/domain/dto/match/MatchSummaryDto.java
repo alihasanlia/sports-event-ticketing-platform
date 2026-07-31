@@ -6,5 +6,7 @@ public record MatchSummaryDto(
     String homeTeam,
     String awayTeam,
     LocalDateTime matchDate,
-    String stadiumName
+    String stadiumName,
+    String tournamentName,
+    String leagueName
 ) {}

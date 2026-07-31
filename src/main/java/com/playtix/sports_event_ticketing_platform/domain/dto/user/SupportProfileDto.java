@@ -5,11 +5,11 @@ import java.util.UUID;
 
 public record SupportProfileDto(
     UUID id,
-    String firstName,
-    String lastName,
+    String firstname,
+    String lastname,
     String email,
     String phoneNumber,
     String city,
     String profileImageUrl,
-    LocalDateTime createdAt
+    LocalDateTime registrationDate
 ) {}

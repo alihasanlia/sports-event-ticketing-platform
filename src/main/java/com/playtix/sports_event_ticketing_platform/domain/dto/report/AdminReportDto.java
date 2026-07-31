@@ -3,7 +3,8 @@ package com.playtix.sports_event_ticketing_platform.domain.dto.report;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.TicketSummeryDto;
+import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.TicketSummaryDto;
+import com.playtix.sports_event_ticketing_platform.domain.dto.user.SupportReferenceDto;
 import com.playtix.sports_event_ticketing_platform.domain.dto.user.UserReferenceDto;
 import com.playtix.sports_event_ticketing_platform.domain.entity.report.ReportStatus;
 import com.playtix.sports_event_ticketing_platform.domain.entity.report.ReportSubject;
@@ -16,7 +17,7 @@ public record AdminReportDto(
     LocalDateTime updatedAt,
     String adminResponse,
     ReportStatus status,
-    TicketSummeryDto ticketSummeryDto,
+    TicketSummaryDto ticketSummaryDto,
     UserReferenceDto userReferenceDto,
-    UUID SupportId
+    SupportReferenceDto supportReferenceDto
 ) {}

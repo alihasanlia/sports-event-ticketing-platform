@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.TicketSummeryDto;
+import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.TicketSummaryDto;
 
 public record CancellationDto(
     UUID id,
@@ -12,5 +12,5 @@ public record CancellationDto(
     BigDecimal refundAmount,
     BigDecimal cancellationFee,
     LocalDateTime requestDate,
-    TicketSummeryDto ticketSummeryDto
+    TicketSummaryDto ticketSummaryDto
 ) {}

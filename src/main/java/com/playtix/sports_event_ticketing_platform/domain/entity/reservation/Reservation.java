@@ -1,11 +1,15 @@
 package com.playtix.sports_event_ticketing_platform.domain.entity.reservation;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.playtix.sports_event_ticketing_platform.domain.entity.Team;
+import com.playtix.sports_event_ticketing_platform.domain.entity.match.Match;
 import com.playtix.sports_event_ticketing_platform.domain.entity.members.User;
 import com.playtix.sports_event_ticketing_platform.domain.entity.payment.Payment;
 import com.playtix.sports_event_ticketing_platform.domain.entity.ticket.Ticket;
+import com.playtix.sports_event_ticketing_platform.domain.entity.ticket.TicketCategory;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -104,6 +108,26 @@ public class Reservation {
             this.payment = null;
         }
     }
+
+    private Duration getTimeRemaining() {
+        if (this.expiry == null) {
+            return Duration.ZERO;
+        }
+        
+        LocalDateTime now = LocalDateTime.now();
+        if (this.expiry.isBefore(now)) {
+            return Duration.ZERO;
+        }
+        
+        return Duration.between(now, this.expiry);
+    }
+
+    public String generateTimeRemainingString() {
+        Duration remaining = getTimeRemaining();
+        long minutes = remaining.toMinutes();
+        long seconds = remaining.toSecondsPart();
+        return "Time remaining: " + minutes + " minutes and " + seconds + " seconds";
+    }
     
     public void confirm() {
         if (this.status != ReservationStatus.PENDING) {
@@ -172,6 +196,27 @@ public class Reservation {
             user != null ? user.getEmail() : "null",
             status
         );
+    }
+
+    public Match getMatch() {
+        if (this.ticket == null) return null;
+        TicketCategory category = this.ticket.getTicketCategory();
+        if (category == null) return null;
+        return category.getMatch();
+    }
+    
+    public String getMatchDescription() {
+        Match match = getMatch();
+        if (match == null) return "No match information";
+        
+        Team homeTeam = match.getHomeTeam();
+        Team awayTeam = match.getAwayTeam();
+        
+        if (homeTeam == null || awayTeam == null) {
+            return "Match details not available";
+        }
+        
+        return homeTeam.getName() + " vs " + awayTeam.getName();
     }
     
     @Override

@@ -8,7 +8,7 @@ import com.playtix.sports_event_ticketing_platform.domain.dto.user.UserReference
 import com.playtix.sports_event_ticketing_platform.domain.entity.payment.PaymentMethod;
 import com.playtix.sports_event_ticketing_platform.domain.entity.payment.PaymentStatus;
 
-public record AdminPayment(
+public record AdminPaymentDto(
     UUID id,
     UserReferenceDto userReferenceDto,
     BigDecimal amount,
@@ -17,7 +17,5 @@ public record AdminPayment(
     PaymentStatus status,
     String transactionId,
     String bankReceiptNumber,
-    String paymentGateway,
-    String cardMask,
-    String description
+    String eventName
 ) {}

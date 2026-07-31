@@ -43,6 +43,9 @@ public class Payment {
     @Column(name = "payment_date", updatable = false)
     private LocalDateTime paymentDate;
 
+    @Column(name = "event_name", nullable = false)
+    private String eventName;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentStatus status;
@@ -65,6 +68,13 @@ public class Payment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @PrePersist
+    private void syncEventName() {
+        if (this.reservation != null) {
+            this.eventName = reservation.getMatchDescription();
+        }
+    }
 
     @PrePersist
     private void onCreate() {
