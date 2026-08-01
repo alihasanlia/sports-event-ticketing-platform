@@ -70,13 +70,6 @@ public class Payment {
     private User user;
 
     @PrePersist
-    private void syncEventName() {
-        if (this.reservation != null) {
-            this.eventName = reservation.getMatchDescription();
-        }
-    }
-
-    @PrePersist
     private void onCreate() {
         this.paymentDate = LocalDateTime.now();
         if (this.status == null) {
@@ -84,6 +77,9 @@ public class Payment {
         }
         if (this.transactionId == null) {
             this.transactionId = generateTransactionId();
+        }
+        if (this.reservation != null) {
+            this.eventName = reservation.getMatchDescription();
         }
     }
 
