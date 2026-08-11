@@ -5,7 +5,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Set;
 import java.util.Optional;
 
 @Service
@@ -24,17 +23,6 @@ public class RedisCacheService {
 
     public void delete(String key) {
         redisTemplate.delete(key);
-    }
-
-    /**
-     * Delete all keys matching a Redis pattern.
-     * Used for broad cache invalidation after writes.
-     */
-    public void deleteByPattern(String pattern) {
-        Set<String> keys = redisTemplate.keys(pattern);
-        if (keys != null && !keys.isEmpty()) {
-            redisTemplate.delete(keys);
-        }
     }
 
     public boolean exists(String key) {
