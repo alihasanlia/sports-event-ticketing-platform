@@ -1,5 +1,6 @@
 package com.playtix.sports_event_ticketing_platform.service;
 
+import com.playtix.sports_event_ticketing_platform.config.RedisCacheProperties;
 import com.playtix.sports_event_ticketing_platform.domain.dto.user.UpdateProfileDto;
 import com.playtix.sports_event_ticketing_platform.domain.dto.user.UserProfileDto;
 import com.playtix.sports_event_ticketing_platform.domain.dto.user.UserReferenceDto;
@@ -7,6 +8,7 @@ import com.playtix.sports_event_ticketing_platform.domain.entity.members.Account
 import com.playtix.sports_event_ticketing_platform.domain.entity.members.User;
 import com.playtix.sports_event_ticketing_platform.mapper.UserMapper;
 import com.playtix.sports_event_ticketing_platform.repository.UserRepository;
+import com.playtix.sports_event_ticketing_platform.service.redis.RedisCacheService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,12 +23,30 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final RedisCacheService redisCacheService;
+    private final RedisCacheProperties redisCacheProperties;
 
     @Transactional(readOnly = true)
     public UserProfileDto getUserProfile(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-        return userMapper.toProfileDto(user);
+        String cacheKey = "user-profile:" + userId;
+
+        return redisCacheService.get(cacheKey)
+                .filter(UserProfileDto.class::isInstance)
+                .map(UserProfileDto.class::cast)
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+                    UserProfileDto userProfileDto = userMapper.toProfileDto(user);
+
+                    redisCacheService.put(
+                            cacheKey,
+                            userProfileDto,
+                            java.time.Duration.ofSeconds(redisCacheProperties.getProfileCacheTtl())
+                    );
+
+                    return userProfileDto;
+                });
     }
 
     @Transactional(readOnly = true)
@@ -56,6 +76,9 @@ public class UserService {
         userMapper.updateEntityFromProfileDto(updateDto, user);
         user = userRepository.save(user);
 
+        // Cache invalidation to keep Redis synchronized with database
+        redisCacheService.delete("user-profile:" + userId);
+
         return userMapper.toProfileDto(user);
     }
 
@@ -78,6 +101,10 @@ public class UserService {
         }
 
         user = userRepository.save(user);
+
+        // Cache invalidation to keep Redis synchronized with database
+        redisCacheService.delete("user-profile:" + userId);
+
         return userMapper.toProfileDto(user);
     }
 
