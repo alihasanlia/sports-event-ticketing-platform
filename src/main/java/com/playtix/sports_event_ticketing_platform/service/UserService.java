@@ -9,6 +9,7 @@ import com.playtix.sports_event_ticketing_platform.domain.entity.members.User;
 import com.playtix.sports_event_ticketing_platform.mapper.UserMapper;
 import com.playtix.sports_event_ticketing_platform.repository.UserRepository;
 import com.playtix.sports_event_ticketing_platform.service.redis.RedisCacheService;
+import com.playtix.sports_event_ticketing_platform.service.redis.RedisKeys;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserProfileDto getUserProfile(UUID userId) {
-        String cacheKey = "user-profile:" + userId;
+        String cacheKey = RedisKeys.userProfile(userId.getMostSignificantBits());
 
         return redisCacheService.get(cacheKey)
                 .filter(UserProfileDto.class::isInstance)
@@ -77,7 +78,7 @@ public class UserService {
         user = userRepository.save(user);
 
         // Cache invalidation to keep Redis synchronized with database
-        redisCacheService.delete("user-profile:" + userId);
+        redisCacheService.delete(RedisKeys.userProfile(userId.getMostSignificantBits()));
 
         return userMapper.toProfileDto(user);
     }
@@ -103,7 +104,7 @@ public class UserService {
         user = userRepository.save(user);
 
         // Cache invalidation to keep Redis synchronized with database
-        redisCacheService.delete("user-profile:" + userId);
+        redisCacheService.delete(RedisKeys.userProfile(userId.getMostSignificantBits()));
 
         return userMapper.toProfileDto(user);
     }
