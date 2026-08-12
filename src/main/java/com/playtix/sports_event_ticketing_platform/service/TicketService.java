@@ -11,6 +11,7 @@ import com.playtix.sports_event_ticketing_platform.domain.entity.match.Match;
 import com.playtix.sports_event_ticketing_platform.repository.MatchRepository;
 import com.playtix.sports_event_ticketing_platform.repository.TicketCategoryRepository;
 import com.playtix.sports_event_ticketing_platform.repository.TicketRepository;
+import com.playtix.sports_event_ticketing_platform.service.redis.RedisCacheService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class TicketService {
     private final TicketCategoryRepository ticketCategoryRepository;
     private final MatchRepository matchRepository;
     private final TicketMapper ticketMapper;
+    private final RedisCacheService redisCacheService;
 
     @Transactional
     public TicketSummaryDto createTicket(CreateTicketRequest request) {
@@ -49,7 +51,10 @@ public class TicketService {
 
         ticket = ticketRepository.save(ticket);
         category.addTicket(ticket);
-        
+
+        // invalidate broad search cache after ticket creation
+        redisCacheService.delete("ticket-search:*");
+
         return ticketMapper.toSummaryDto(ticket);
     }
 

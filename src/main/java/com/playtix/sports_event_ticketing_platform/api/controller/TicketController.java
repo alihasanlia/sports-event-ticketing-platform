@@ -3,6 +3,7 @@ package com.playtix.sports_event_ticketing_platform.api.controller;
 import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.CreateTicketRequest;
 import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.TicketDetailsDto;
 import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.TicketSummaryDto;
+import com.playtix.sports_event_ticketing_platform.service.TicketSearchService;
 import com.playtix.sports_event_ticketing_platform.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.UUID;
 public class TicketController {
 
     private final TicketService ticketService;
+    private final TicketSearchService ticketSearchService;
 
     @PostMapping
     public ResponseEntity<TicketSummaryDto> createTicket(@Valid @RequestBody CreateTicketRequest request) {
@@ -73,5 +75,22 @@ public class TicketController {
     @GetMapping("/user/{userId}/reserved")
     public ResponseEntity<List<TicketSummaryDto>> getReservedTicketsByUserId(@PathVariable UUID userId) {
         return ResponseEntity.ok(ticketService.getReservedTicketsByUserId(userId));
+    }
+
+    /**
+     * Cached ticket search endpoint backed by Redis.
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<?>> searchTickets(
+            @RequestParam(required = false) UUID matchId,
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) String sport,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String team,
+            @RequestParam(required = false) String priceRange
+    ) {
+        return ResponseEntity.ok(
+                ticketSearchService.searchTickets(matchId, categoryId, sport, city, team, priceRange)
+        );
     }
 }
