@@ -53,7 +53,7 @@ public class TicketService {
         category.addTicket(ticket);
 
         // invalidate broad search cache after ticket creation
-        redisCacheService.delete("ticket-search:*");
+        redisCacheService.deleteByPattern("ticket-search:*");
 
         return ticketMapper.toSummaryDto(ticket);
     }
