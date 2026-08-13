@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PlayTix - Home</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<header class="main-header">
+
+    <div class="header-content">
+
+        <a href="index.html" class="logo">
+            PlayTix
+        </a>
+
+        <nav class="main-nav">
+
+            <a href="index.html" class="nav-link active">
+                Home
+            </a>
+
+            <a href="tickets.html" class="nav-link">
+                My Tickets
+            </a>
+
+            <a href="reservations.html" class="nav-link">
+                Reservations
+            </a>
+
+        </nav>
+
+        <a href="profile.html" class="profile-link" title="My Profile">
+
+                <span class="profile-icon">
+                    👤
+                </span>
+
+            <span>My Profile</span>
+
+        </a>
+
+    </div>
+
+</header>
+
+
+<!-- ================= MAIN ================= -->
+
+<main class="home-container">
+
+    <!-- Hero -->
+
+    <section class="hero-section">
+
+        <h1>
+            Find Your Sports Ticket
+        </h1>
+
+        <p>
+            Search for matches and book your seat.
+        </p>
+
+        <!-- Search -->
+
+        <form class="search-bar" id="searchForm">
+
+            <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search for teams, tournaments, stadiums..."
+            >
+
+            <button type="submit">
+                Search
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- ================= SPORTS ================= -->
+
+    <section class="sports-section">
+
+        <div class="section-heading">
+
+            <h2>
+                Choose Your Sport
+            </h2>
+
+            <p>
+                Select a sport to explore available matches.
+            </p>
+
+        </div>
+
+
+        <div class="sports-grid">
+
+
+            <!-- FOOTBALL -->
+
+            <a
+                    href="sports.html?sport=football"
+                    class="sport-card"
+            >
+
+                <div class="sport-icon">
+                    ⚽
+                </div>
+
+                <h3>
+                    Football
+                </h3>
+
+                <p>
+                    Explore football matches and tickets.
+                </p>
+
+            </a>
+
+
+            <!-- BASKETBALL -->
+
+            <a
+                    href="sports.html?sport=basketball"
+                    class="sport-card"
+            >
+
+                <div class="sport-icon">
+                    🏀
+                </div>
+
+                <h3>
+                    Basketball
+                </h3>
+
+                <p>
+                    Explore basketball matches and tickets.
+                </p>
+
+            </a>
+
+
+            <!-- VOLLEYBALL -->
+
+            <a
+                    href="sports.html?sport=volleyball"
+                    class="sport-card"
+            >
+
+                <div class="sport-icon">
+                    🏐
+                </div>
+
+                <h3>
+                    Volleyball
+                </h3>
+
+                <p>
+                    Explore volleyball matches and tickets.
+                </p>
+
+            </a>
+
+        </div>
+
+    </section>
+
+    <!-- ================= MATCH CALENDAR ================= -->
+
+    <section class="calendar-section">
+
+        <div class="calendar-header">
+
+            <div>
+
+                <h3>
+                    Match Calendar
+                </h3>
+
+                <p>
+                    Select a date to see matches on that day.
+                </p>
+
+            </div>
+
+
+            <div class="calendar-navigation">
+
+                <button
+                        type="button"
+                        id="previousMonth"
+                        class="calendar-nav-btn"
+                >
+                    ‹
+                </button>
+
+
+                <h3 id="currentMonth">
+                    August 2026
+                </h3>
+
+
+                <button
+                        type="button"
+                        id="nextMonth"
+                        class="calendar-nav-btn"
+                >
+                    ›
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="calendar">
+
+            <!-- Weekdays -->
+
+            <div class="calendar-weekdays">
+
+                <div>Sun</div>
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+
+            </div>
+
+
+            <!-- Days will be generated by JavaScript -->
+
+            <div
+                    id="calendarDays"
+                    class="calendar-days"
+            >
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="main-footer">
+
+    <p>
+        © 2026 PlayTix. All rights reserved.
+    </p>
+
+</footer>
+
+
+<script>
+
+    const searchForm =
+        document.getElementById("searchForm");
+
+    const searchInput =
+        document.getElementById("searchInput");
+
+
+    searchForm.addEventListener("submit", function (event) {
+
+        event.preventDefault();
+
+        const query =
+            searchInput.value.trim();
+
+        if (query === "") {
+            return;
+        }
+
+        /*
+         * Search API will be connected later.
+         *
+         * For now we simply store the search query
+         * and move to the search page.
+         */
+
+        window.location.href =
+            "results.html?search=" +
+            encodeURIComponent(query);
+
+    });
+
+    /* =====================================================
+    MATCH CALENDAR
+    ===================================================== */
+
+    const calendarDays =
+        document.getElementById(
+            "calendarDays"
+        );
+
+    const currentMonth =
+        document.getElementById(
+            "currentMonth"
+        );
+
+    const previousMonth =
+        document.getElementById(
+            "previousMonth"
+        );
+
+    const nextMonth =
+        document.getElementById(
+            "nextMonth"
+        );
+
+    /*
+
+    * Start from the current date.
+    */
+
+    let calendarDate = new Date();
+
+    /*
+
+    * Month names.
+    */
+
+    const monthNames = [
+
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+
+    ];
+
+    /*
+
+    * Generate calendar.
+    */
+
+    function generateCalendar() {
+
+        calendarDays.innerHTML = "";
+
+
+        const year =
+            calendarDate.getFullYear();
+
+
+        const month =
+            calendarDate.getMonth();
+
+
+        /*
+         * First day of current month.
+         *
+         * 0 = Sunday
+         * 1 = Monday
+         * ...
+         * 6 = Saturday
+         */
+
+        const firstDay =
+            new Date(
+                year,
+                month,
+                1
+            ).getDay();
+
+
+        /*
+         * Number of days in current month.
+         */
+
+        const numberOfDays =
+            new Date(
+                year,
+                month + 1,
+                0
+            ).getDate();
+
+
+
+        /*
+         * Update month title.
+         */
+
+        currentMonth.textContent =
+            monthNames[month] +
+            " " +
+            year;
+
+
+
+        /*
+         * Add empty cells before
+         * the first day.
+         */
+
+        for (
+            let i = 0;
+            i < firstDay;
+            i++
+        ) {
+
+            const emptyDay =
+                document.createElement("div");
+
+            emptyDay.classList.add(
+                "calendar-day",
+                "empty"
+            );
+
+            calendarDays.appendChild(
+                emptyDay
+            );
+
+        }
+
+
+
+        /*
+         * Current date.
+         */
+
+        const today =
+            new Date();
+
+
+        const todayYear =
+            today.getFullYear();
+
+
+        const todayMonth =
+            today.getMonth();
+
+
+        const todayDate =
+            today.getDate();
+
+
+
+        /*
+         * Generate actual days.
+         */
+
+        for (
+            let day = 1;
+            day <= numberOfDays;
+            day++
+        ) {
+
+            const dayElement =
+                document.createElement("div");
+
+
+            dayElement.classList.add(
+                "calendar-day"
+            );
+
+
+            dayElement.textContent =
+                day;
+
+
+
+            /*
+             * Highlight today.
+             */
+
+            if (
+
+                year === todayYear &&
+                month === todayMonth &&
+                day === todayDate
+
+            ) {
+
+                dayElement.classList.add(
+                    "today"
+                );
+
+            }
+
+
+
+            /*
+             * Click on date.
+             */
+
+            dayElement.addEventListener(
+                "click",
+                function () {
+
+                    /*
+                     * Create date in YYYY-MM-DD
+                     * format.
+                     */
+
+                    const selectedDate =
+                        year +
+                        "-" +
+                        String(
+                            month + 1
+                        ).padStart(2, "0") +
+                        "-" +
+                        String(day)
+                            .padStart(2, "0");
+
+
+                    /*
+                     * Send selected date
+                     * to results.html.
+                     *
+                     * Example:
+                     *
+                     * results.html?date=2026-08-15
+                     */
+
+                    window.location.href =
+                        "results.html?date=" +
+                        selectedDate;
+
+                }
+            );
+
+
+            calendarDays.appendChild(
+                dayElement
+            );
+
+        }
+
+    }
+
+    /* =====================================================
+    PREVIOUS MONTH
+    ===================================================== */
+
+    previousMonth.addEventListener(
+        "click",
+        function () {
+
+            calendarDate.setMonth(
+                calendarDate.getMonth() - 1
+            );
+
+            generateCalendar();
+
+        }
+
+    );
+
+    /* =====================================================
+    NEXT MONTH
+    ===================================================== */
+
+    nextMonth.addEventListener(
+        "click",
+        function () {
+
+            calendarDate.setMonth(
+                calendarDate.getMonth() + 1
+            );
+
+            generateCalendar();
+
+        }
+
+    );
+
+    /* =====================================================
+    INITIALIZE
+    ===================================================== */
+
+    generateCalendar();
+</script>
+
+</body>
+</html>
