@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayTix | Results</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<header class="main-header">
+  <div class="header-content">
+    <a href="index.html" class="logo">PlayTix</a>
+    <nav class="main-nav">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="profile.html" class="nav-link">Profile</a>
+      <a href="tickets.html" class="nav-link">Tickets</a>
+      <a href="reports.html" class="nav-link">Reports</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ================= MAIN ================= -->
+<main class="page-container">
+
+  <!-- ================= SEARCH HEADER ================= -->
+  <div class="page-header">
+    <div>
+      <h1>Results</h1>
+      <p id="searchDescription">Loading...</p>
+    </div>
+  </div>
+
+  <!-- ================= RESULTS ================= -->
+  <section id="searchResults" class="ticket-list">
+    <!-- نتایج به صورت داینامیک اینجا ساخته می‌شوند -->
+  </section>
+
+  <!-- NO RESULTS -->
+  <div id="noResults" class="no-search-results" style="display: none;">
+    <h2>No matches found</h2>
+    <p>We couldn't find any matches for your search.</p>
+    <a href="index.html" class="primary-btn">Back to Home</a>
+  </div>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="main-footer">
+  <p>© 2026 PlayTix. All Rights Reserved.</p>
+</footer>
+
+<!-- ================= JAVASCRIPT ================= -->
+<script>
+  /* =====================================================
+     1. خواندن پارامترهای URL
+  ===================================================== */
+  const urlParams = new URLSearchParams(window.location.search);
+
+  const searchQuery = urlParams.get("q") || "";
+  const searchType  = urlParams.get("type") || "general";   // general | league | team | stadium
+
+  const searchDescription = document.getElementById("searchDescription");
+  const resultsContainer  = document.getElementById("searchResults");
+  const noResults         = document.getElementById("noResults");
+
+  /* متن توضیحی بالای صفحه */
+  function updateDescription() {
+    if (!searchQuery) {
+      searchDescription.textContent = "Showing all available matches.";
+      return;
+    }
+
+    const typeLabels = {
+      league:  "League / Tournament",
+      team:    "Team",
+      stadium: "Stadium",
+      general: "Search"
+    };
+
+    const label = typeLabels[searchType] || "Search";
+    searchDescription.textContent = `${label}: "${searchQuery}"`;
+  }
+
+  /* =====================================================
+     2. ساخت کارت مسابقه (برای استفاده مجدد)
+  ===================================================== */
+  function createMatchCard(match) {
+    const article = document.createElement("article");
+    article.className = "ticket-card search-match-card";
+    article.dataset.searchContent = [
+      match.homeTeam,
+      match.awayTeam,
+      match.stadium,
+      match.league,
+      match.sport
+    ].join(" ");
+
+    // Facilities
+    const facilitiesHtml = match.facilities
+            .map(f => `<span class="facility-tag">${f}</span>`)
+            .join("");
+
+    // Ticket categories
+    const optionsHtml = match.categories
+            .map(cat => `
+                <option value="${cat.name}" data-price="${cat.price}">
+                    ${cat.name}
+                </option>
+            `)
+            .join("");
+
+    const defaultPrice = match.categories[0]?.price || 0;
+
+    article.innerHTML = `
+            <div class="ticket-header">
+                <div>
+                    <h2>${match.homeTeam} vs ${match.awayTeam}</h2>
+                    <p class="ticket-id">Match ID: #${match.id}</p>
+                </div>
+                <span class="status-badge status-active">AVAILABLE</span>
+            </div>
+
+            <div class="ticket-info">
+                <div class="ticket-info-item">
+                    <span class="info-label">Sport</span>
+                    <span>${match.sport}</span>
+                </div>
+                <div class="ticket-info-item">
+                    <span class="info-label">League / Tournament</span>
+                    <span>${match.league}</span>
+                </div>
+                <div class="ticket-info-item">
+                    <span class="info-label">Date</span>
+                    <span>${match.date}</span>
+                </div>
+                <div class="ticket-info-item">
+                    <span class="info-label">Time</span>
+                    <span>${match.time}</span>
+                </div>
+                <div class="ticket-info-item">
+                    <span class="info-label">Stadium</span>
+                    <span>${match.stadium}</span>
+                </div>
+                <div class="ticket-info-item">
+                    <span class="info-label">Remaining Capacity</span>
+                    <span>${match.remainingCapacity.toLocaleString()} seats</span>
+                </div>
+            </div>
+
+            <div class="stadium-facilities">
+                <span class="info-label">Stadium Facilities</span>
+                <div class="facility-list">
+                    ${facilitiesHtml}
+                </div>
+            </div>
+
+            <div class="ticket-booking-section">
+                <div class="form-group">
+                    <label for="category-${match.id}">Ticket Category</label>
+                    <select
+                        id="category-${match.id}"
+                        class="ticket-category-select"
+                        data-match-id="${match.id}"
+                        data-price-target="price-${match.id}"
+                    >
+                        ${optionsHtml}
+                    </select>
+                </div>
+
+                <div class="selected-ticket-price">
+                    <span class="info-label">Price</span>
+                    <strong id="price-${match.id}">
+                        ${Number(defaultPrice).toLocaleString()} Toman
+                    </strong>
+                </div>
+
+                <button
+                    type="button"
+                    class="primary-btn reserve-btn"
+                    data-match-id="${match.id}"
+                    data-match="${match.homeTeam} vs ${match.awayTeam}"
+                    data-stadium="${match.stadium}"
+                    data-category-select="category-${match.id}"
+                    onclick="reserveTicket(this)"
+                >
+                    Reserve
+                </button>
+            </div>
+        `;
+
+    return article;
+  }
+
+  /* =====================================================
+     3. لود کردن نتایج (آماده برای بک‌اند)
+  ===================================================== */
+  async function loadResults() {
+    updateDescription();
+    resultsContainer.innerHTML = "";          // پاک کردن نتایج قبلی
+    noResults.style.display = "none";
+
+    try {
+      /* -------------------------------------------------
+         بعداً این بخش رو با fetch واقعی جایگزین کن:
+
+         let url = "/api/matches";
+
+         if (searchType === "league") {
+             url = `/api/matches?league=${encodeURIComponent(searchQuery)}`;
+         } else if (searchType === "team") {
+             url = `/api/matches?team=${encodeURIComponent(searchQuery)}`;
+         } else if (searchType === "stadium") {
+             url = `/api/matches?stadium=${encodeURIComponent(searchQuery)}`;
+         } else if (searchQuery) {
+             url = `/api/matches?q=${encodeURIComponent(searchQuery)}`;
+         }
+
+         const response = await fetch(url);
+         const matches = await response.json();
+      ------------------------------------------------- */
+
+      // ---------- Mock Data (فقط برای تست فعلی) ----------
+      const allMatches = [
+        {
+          id: "MATCH-1001",
+          homeTeam: "Real Madrid",
+          awayTeam: "Barcelona",
+          sport: "Football",
+          league: "La Liga",
+          date: "August 20, 2026",
+          time: "20:30",
+          stadium: "Santiago Bernabeu",
+          remainingCapacity: 4250,
+          facilities: ["Parking", "Food Court", "Wi-Fi", "Accessible Seating"],
+          categories: [
+            { name: "VIP", price: 2500000 },
+            { name: "Regular", price: 1200000 },
+            { name: "Economy", price: 700000 }
+          ]
+        },
+        {
+          id: "MATCH-1002",
+          homeTeam: "Manchester City",
+          awayTeam: "Liverpool",
+          sport: "Football",
+          league: "Premier League",
+          date: "August 25, 2026",
+          time: "19:00",
+          stadium: "Etihad Stadium",
+          remainingCapacity: 2180,
+          facilities: ["Parking", "Restaurants", "Wi-Fi", "VIP Lounge"],
+          categories: [
+            { name: "VIP", price: 2200000 },
+            { name: "Regular", price: 1000000 },
+            { name: "Economy", price: 600000 }
+          ]
+        }
+      ];
+
+      // فیلتر سمت فرانت (بعداً بک‌اند این کار رو می‌کنه)
+      let matches = allMatches;
+
+      if (searchQuery) {
+        const q = searchQuery.trim().toLowerCase();
+
+        matches = allMatches.filter(m => {
+          if (searchType === "league") {
+            return m.league.toLowerCase().includes(q);
+          }
+          if (searchType === "team") {
+            return m.homeTeam.toLowerCase().includes(q) ||
+                    m.awayTeam.toLowerCase().includes(q);
+          }
+          if (searchType === "stadium") {
+            return m.stadium.toLowerCase().includes(q);
+          }
+          // general search
+          return (
+                  m.homeTeam.toLowerCase().includes(q) ||
+                  m.awayTeam.toLowerCase().includes(q) ||
+                  m.stadium.toLowerCase().includes(q) ||
+                  m.league.toLowerCase().includes(q) ||
+                  m.sport.toLowerCase().includes(q)
+          );
+        });
+      }
+
+      // ---------- نمایش نتایج ----------
+      if (matches.length === 0) {
+        noResults.style.display = "block";
+        return;
+      }
+
+      matches.forEach(match => {
+        resultsContainer.appendChild(createMatchCard(match));
+      });
+
+      // بعد از ساخت کارت‌ها، event listenerهای قیمت رو وصل کن
+      attachPriceListeners();
+
+    } catch (error) {
+      console.error("Error loading results:", error);
+      noResults.style.display = "block";
+      noResults.querySelector("p").textContent =
+              "Failed to load matches. Please try again later.";
+    }
+  }
+
+  /* =====================================================
+     4. تغییر قیمت با انتخاب کتگوری
+  ===================================================== */
+  function attachPriceListeners() {
+    document.querySelectorAll(".ticket-category-select").forEach(select => {
+      select.addEventListener("change", function () {
+        const selectedOption = this.options[this.selectedIndex];
+        const price = selectedOption.dataset.price;
+        const priceTarget = document.getElementById(this.dataset.priceTarget);
+
+        if (priceTarget) {
+          priceTarget.textContent =
+                  Number(price).toLocaleString() + " Toman";
+        }
+      });
+    });
+  }
+
+  /* =====================================================
+     5. رزرو بلیط
+  ===================================================== */
+  function reserveTicket(button) {
+    const matchId = button.dataset.matchId;
+    const match   = button.dataset.match;
+    const stadium = button.dataset.stadium;
+
+    const categorySelect = document.getElementById(button.dataset.categorySelect);
+    const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+
+    const category = selectedOption.value;
+    const price    = Number(selectedOption.dataset.price);
+
+    const reservation = {
+      matchId,
+      match,
+      stadium,
+      ticketCategory: category,
+      price,
+      reservationTime: new Date().toISOString()
+    };
+
+    // ---------- بعداً این قسمت رو به بک‌اند وصل کن ----------
+    // fetch("/api/reservations", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({ matchId, ticketCategory: category })
+    // })
+    // .then(res => res.json())
+    // .then(data => { ... });
+
+    // فعلاً localStorage
+    let reservations = JSON.parse(localStorage.getItem("reservations")) || [];
+    reservations.push(reservation);
+    localStorage.setItem("reservations", JSON.stringify(reservations));
+
+    console.log("Reservation:", reservation);
+
+    alert(
+            "Ticket reserved successfully!\n\n" +
+            "Match: " + match + "\n" +
+            "Category: " + category + "\n" +
+            "Price: " + price.toLocaleString() + " Toman"
+    );
+
+    button.disabled = true;
+    button.textContent = "Reserved";
+    button.classList.add("disabled");
+  }
+
+  /* =====================================================
+     شروع کار
+  ===================================================== */
+  loadResults();
+</script>
+
+</body>
+</html>
