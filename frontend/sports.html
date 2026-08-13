@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>PlayTix | Sport</title>
+
+    <link
+            rel="stylesheet"
+            href="css/style.css"
+    >
+
+</head>
+<body>
+<!-- ================= HEADER ================= -->
+
+<header class="main-header">
+
+    <div class="header-content">
+
+        <a
+                href="index.html"
+                class="logo"
+        >
+            PlayTix
+        </a>
+
+
+        <nav class="main-nav">
+
+            <a
+                    href="index.html"
+                    class="nav-link"
+            >
+                Home
+            </a>
+
+            <a
+                    href="profile.html"
+                    class="nav-link"
+            >
+                Profile
+            </a>
+
+            <a
+                    href="tickets.html"
+                    class="nav-link"
+            >
+                Tickets
+            </a>
+
+            <a
+                    href="reports.html"
+                    class="nav-link"
+            >
+                Reports
+            </a>
+
+        </nav>
+
+    </div>
+
+</header>
+
+
+
+<!-- ================= MAIN ================= -->
+
+<main class="page-container">
+
+
+    <!-- ================= PAGE TITLE ================= -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h1 id="sportTitle">
+                Football
+            </h1>
+
+            <p id="sportDescription">
+                Browse stadiums and leagues for this sport.
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================= TOGGLE ================= -->
+
+    <div class="sport-toggle">
+
+        <button
+                type="button"
+                class="sport-toggle-btn active"
+                data-view="stadiums"
+        >
+            Stadiums
+        </button>
+
+
+        <button
+                type="button"
+                class="sport-toggle-btn"
+                data-view="leagues"
+        >
+            Leagues / Tournaments
+        </button>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         STADIUMS
+    ====================================================== -->
+
+    <section
+            id="stadiumsView"
+            class="sport-items-view active"
+    >
+
+        <div class="sport-items-grid">
+
+
+            <!-- Stadium 1 -->
+
+            <a
+                    href="results.html?type=stadium&id=stadium-001"
+                    class="sport-item-card"
+                    data-item-type="stadium"
+                    data-id="stadium-001"
+            >
+
+                <div class="sport-item-icon">
+                    🏟️
+                </div>
+
+
+                <div class="sport-item-content">
+
+                    <h2>
+                        Azadi Stadium
+                    </h2>
+
+                    <p>
+                        Tehran, Iran
+                    </p>
+
+                    <span class="item-link">
+                        View Matches →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+
+            <!-- Stadium 2 -->
+
+            <a
+                    href="results.html?type=stadium&id=stadium-002"
+                    class="sport-item-card"
+                    data-item-type="stadium"
+                    data-id="stadium-002"
+            >
+
+                <div class="sport-item-icon">
+                    🏟️
+                </div>
+
+
+                <div class="sport-item-content">
+
+                    <h2>
+                        Santiago Bernabeu
+                    </h2>
+
+                    <p>
+                        Madrid, Spain
+                    </p>
+
+                    <span class="item-link">
+                        View Matches →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+
+            <!-- Stadium 3 -->
+
+            <a
+                    href="results.html?type=stadium&id=stadium-003"
+                    class="sport-item-card"
+                    data-item-type="stadium"
+                    data-id="stadium-003"
+            >
+
+                <div class="sport-item-icon">
+                    🏟️
+                </div>
+
+
+                <div class="sport-item-content">
+
+                    <h2>
+                        Etihad Stadium
+                    </h2>
+
+                    <p>
+                        Manchester, England
+                    </p>
+
+                    <span class="item-link">
+                        View Matches →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         LEAGUES / TOURNAMENTS
+    ====================================================== -->
+
+    <section
+            id="leaguesView"
+            class="sport-items-view"
+    >
+
+        <div class="sport-items-grid">
+
+
+            <!-- League 1 -->
+
+            <a
+                    href="results.html?type=league&id=league-001"
+                    class="sport-item-card"
+                    data-item-type="league"
+                    data-id="league-001"
+            >
+
+                <div class="sport-item-icon">
+                    🏆
+                </div>
+
+
+                <div class="sport-item-content">
+
+                    <h2>
+                        Premier League
+                    </h2>
+
+                    <p>
+                        England
+                    </p>
+
+                    <span class="item-link">
+                        View Matches →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+
+            <!-- League 2 -->
+
+            <a
+                    href="results.html?type=league&id=league-002"
+                    class="sport-item-card"
+                    data-item-type="league"
+                    data-id="league-002"
+            >
+
+                <div class="sport-item-icon">
+                    🏆
+                </div>
+
+
+                <div class="sport-item-content">
+
+                    <h2>
+                        La Liga
+                    </h2>
+
+                    <p>
+                        Spain
+                    </p>
+
+                    <span class="item-link">
+                        View Matches →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+
+            <!-- Tournament -->
+
+            <a
+                    href="results.html?type=league&id=tournament-001"
+                    class="sport-item-card"
+                    data-item-type="league"
+                    data-id="tournament-001"
+            >
+
+                <div class="sport-item-icon">
+                    🏆
+                </div>
+
+
+                <div class="sport-item-content">
+
+                    <h2>
+                        UEFA Champions League
+                    </h2>
+
+                    <p>
+                        Europe
+                    </p>
+
+                    <span class="item-link">
+                        View Matches →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ================= NO RESULTS ================= -->
+
+    <div
+            id="noItems"
+            class="no-search-results"
+            style="display: none;"
+    >
+
+        <h2>
+            Nothing found
+        </h2>
+
+        <p>
+            There are currently no available stadiums or leagues.
+        </p>
+
+    </div>
+
+
+</main>
+
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="main-footer">
+
+    <p>
+        © 2026 PlayTix. All Rights Reserved.
+    </p>
+
+</footer>
+
+
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script>
+
+
+    /* =====================================================
+       GET SPORT FROM URL
+
+       Example:
+
+       sport.html?sport=football
+       sport.html?sport=basketball
+       sport.html?sport=volleyball
+    ===================================================== */
+
+    const urlParams =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const sport =
+        urlParams.get("sport");
+
+
+
+    /* =====================================================
+       SPORT INFORMATION
+
+       Temporary frontend data.
+       Later it can come from Backend.
+    ===================================================== */
+
+    const sports = {
+
+        football: {
+
+            title: "Football",
+
+            description:
+                "Browse football stadiums and leagues."
+
+        },
+
+
+        basketball: {
+
+            title: "Basketball",
+
+            description:
+                "Browse basketball stadiums and leagues."
+
+        },
+
+
+        volleyball: {
+
+            title: "Volleyball",
+
+            description:
+                "Browse volleyball stadiums and leagues."
+
+        }
+
+    };
+
+
+
+    /* =====================================================
+       UPDATE PAGE TITLE
+    ===================================================== */
+
+    if (sport && sports[sport]) {
+
+        document.getElementById(
+            "sportTitle"
+        ).textContent =
+            sports[sport].title;
+
+
+        document.getElementById(
+            "sportDescription"
+        ).textContent =
+            sports[sport].description;
+
+    }
+
+
+
+    /* =====================================================
+       TOGGLE
+    ===================================================== */
+
+    const toggleButtons =
+        document.querySelectorAll(
+            ".sport-toggle-btn"
+        );
+
+
+    const stadiumsView =
+        document.getElementById(
+            "stadiumsView"
+        );
+
+
+    const leaguesView =
+        document.getElementById(
+            "leaguesView"
+        );
+
+
+    toggleButtons.forEach(
+        function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+
+                    /* Remove active from buttons */
+
+                    toggleButtons.forEach(
+                        function (btn) {
+
+                            btn.classList.remove(
+                                "active"
+                            );
+
+                        }
+                    );
+
+
+                    /* Activate clicked button */
+
+                    this.classList.add(
+                        "active"
+                    );
+
+
+                    const view =
+                        this.dataset.view;
+
+
+
+                    /* Show Stadiums */
+
+                    if (
+                        view === "stadiums"
+                    ) {
+
+                        stadiumsView.classList.add(
+                            "active"
+                        );
+
+                        leaguesView.classList.remove(
+                            "active"
+                        );
+
+                    }
+
+
+
+                    /* Show Leagues */
+
+                    else {
+
+                        leaguesView.classList.add(
+                            "active"
+                        );
+
+                        stadiumsView.classList.remove(
+                            "active"
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+</script>
+
+</body>
+</html>
