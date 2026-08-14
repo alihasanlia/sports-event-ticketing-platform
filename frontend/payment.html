@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>PlayTix | Payment</title>
+
+    <link
+            rel="stylesheet"
+            href="css/style.css"
+    >
+
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<header class="main-header">
+
+    <div class="header-content">
+
+        <a
+                href="index.html"
+                class="logo"
+        >
+            PlayTix
+        </a>
+
+
+        <nav class="main-nav">
+
+            <a
+                    href="index.html"
+                    class="nav-link"
+            >
+                Home
+            </a>
+
+            <a
+                    href="profile.html"
+                    class="nav-link"
+            >
+                Profile
+            </a>
+
+            <a
+                    href="reservations.html"
+                    class="nav-link active"
+            >
+                Reservations
+            </a>
+
+            <a
+                    href="tickets.html"
+                    class="nav-link"
+            >
+                Tickets
+            </a>
+
+        </nav>
+
+    </div>
+
+</header>
+
+
+
+<!-- ================= MAIN ================= -->
+
+<main class="page-container payment-page">
+
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>
+                Payment
+            </h1>
+
+            <p>
+                Complete your payment to confirm your ticket.
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================= PAYMENT CONTAINER ================= -->
+
+    <div class="payment-container">
+
+
+        <!-- ================= ORDER SUMMARY ================= -->
+
+        <section class="payment-summary">
+
+            <h2>
+                Reservation Summary
+            </h2>
+
+
+            <div class="payment-summary-item">
+
+                <span>
+                    Match
+                </span>
+
+                <strong id="matchName">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div class="payment-summary-item">
+
+                <span>
+                    Stadium
+                </span>
+
+                <strong id="stadiumName">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div class="payment-summary-item">
+
+                <span>
+                    Ticket Category
+                </span>
+
+                <strong id="ticketCategory">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div class="payment-summary-total">
+
+                <span>
+                    Total
+                </span>
+
+                <strong id="paymentAmount">
+                    -
+                </strong>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= PAYMENT FORM ================= -->
+
+        <section class="payment-form-container">
+
+            <h2>
+                Card Information
+            </h2>
+
+
+            <form
+                    id="paymentForm"
+            >
+
+
+                <div class="form-group">
+
+                    <label for="cardHolder">
+                        Card Holder Name
+                    </label>
+
+                    <input
+                            type="text"
+                            id="cardHolder"
+                            placeholder="Enter card holder name"
+                            required
+                    >
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="cardNumber">
+                        Card Number
+                    </label>
+
+                    <input
+                            type="text"
+                            id="cardNumber"
+                            placeholder="6037 **** **** ****"
+                            maxlength="16"
+                            inputmode="numeric"
+                            required
+                    >
+
+                </div>
+
+
+
+                <div class="payment-row">
+
+
+                    <div class="form-group">
+
+                        <label for="expiry">
+                            Expiry Date
+                        </label>
+
+                        <input
+                                type="text"
+                                id="expiry"
+                                placeholder="MM/YY"
+                                maxlength="5"
+                                required
+                        >
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="cvv">
+                            CVV2
+                        </label>
+
+                        <input
+                                type="password"
+                                id="cvv"
+                                placeholder="***"
+                                maxlength="4"
+                                inputmode="numeric"
+                                required
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+
+                <button
+                        type="submit"
+                        class="primary-btn payment-submit-btn"
+                >
+                    Pay Now
+                </button>
+
+
+            </form>
+
+
+            <!-- ================= SUCCESS ================= -->
+
+            <div
+                    id="paymentSuccess"
+                    class="payment-success"
+                    style="display: none;"
+            >
+
+                <div class="success-icon">
+                    ✓
+                </div>
+
+
+                <h2>
+                    Payment Successful
+                </h2>
+
+
+                <p>
+                    Your payment has been completed successfully.
+                </p>
+
+
+                <a
+                        href="tickets.html"
+                        class="primary-btn"
+                >
+                    View My Tickets
+                </a>
+
+            </div>
+
+
+        </section>
+
+
+    </div>
+
+
+</main>
+
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="main-footer">
+
+    <p>
+        © 2026 PlayTix. All Rights Reserved.
+    </p>
+
+</footer>
+
+
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script>
+
+
+    /* =====================================================
+       GET RESERVATION INDEX
+    ===================================================== */
+
+    const urlParams =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const reservationIndex =
+        Number(
+            urlParams.get(
+                "reservation"
+            )
+        );
+
+
+
+    /* =====================================================
+       LOAD RESERVATIONS
+    ===================================================== */
+
+    let reservations =
+        JSON.parse(
+            localStorage.getItem(
+                "reservations"
+            )
+        ) || [];
+
+
+
+    const reservation =
+        reservations[
+            reservationIndex
+            ];
+
+
+
+    /* =====================================================
+       ELEMENTS
+    ===================================================== */
+
+    const matchName =
+        document.getElementById(
+            "matchName"
+        );
+
+
+    const stadiumName =
+        document.getElementById(
+            "stadiumName"
+        );
+
+
+    const ticketCategory =
+        document.getElementById(
+            "ticketCategory"
+        );
+
+
+    const paymentAmount =
+        document.getElementById(
+            "paymentAmount"
+        );
+
+
+    const paymentForm =
+        document.getElementById(
+            "paymentForm"
+        );
+
+
+    const paymentSuccess =
+        document.getElementById(
+            "paymentSuccess"
+        );
+
+
+
+    /* =====================================================
+       CHECK RESERVATION
+    ===================================================== */
+
+    if (
+        !reservation ||
+        reservation.paid
+    ) {
+
+        paymentForm.style.display =
+            "none";
+
+
+        if (reservation) {
+
+            paymentSuccess.style.display =
+                "block";
+
+        }
+
+    } else {
+
+
+        /* Display Reservation */
+
+        matchName.textContent =
+            reservation.match;
+
+
+        stadiumName.textContent =
+            reservation.stadium;
+
+
+        ticketCategory.textContent =
+            reservation.ticketCategory;
+
+
+        paymentAmount.textContent =
+            Number(
+                reservation.price
+            ).toLocaleString() +
+            " Toman";
+
+    }
+
+
+
+    /* =====================================================
+       PAYMENT
+    ===================================================== */
+
+    paymentForm.addEventListener(
+        "submit",
+        function (event) {
+
+            event.preventDefault();
+
+
+
+            /*
+             * This is ONLY a local demo.
+             *
+             * No real payment gateway is used.
+             *
+             * No card information is sent
+             * anywhere.
+             */
+
+
+            reservations[
+                reservationIndex
+                ].paid = true;
+
+
+            reservations[
+                reservationIndex
+                ].paymentTime =
+                new Date().toISOString();
+
+
+
+            localStorage.setItem(
+                "reservations",
+                JSON.stringify(
+                    reservations
+                )
+            );
+
+
+
+            /* Hide form */
+
+            paymentForm.style.display =
+                "none";
+
+
+
+            /* Show success */
+
+            paymentSuccess.style.display =
+                "block";
+
+        }
+    );
+
+
+</script>
+
+</body>
+
+</html>
