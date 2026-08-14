@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>PlayTix | Edit Ticket</title>
+
+  <link
+          rel="stylesheet"
+          href="css/style.css"
+  >
+
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<header class="main-header">
+
+  <div class="header-content">
+
+    <a
+            href="index.html"
+            class="logo"
+    >
+      PlayTix
+    </a>
+
+
+    <nav class="main-nav">
+
+      <a
+              href="index.html"
+              class="nav-link"
+      >
+        Home
+      </a>
+
+      <a
+              href="admin-profile.html"
+              class="nav-link"
+      >
+        Profile
+      </a>
+
+      <a
+              href="admin-tickets.html"
+              class="nav-link active"
+      >
+        Tickets
+      </a>
+
+      <a
+              href="admin-reports.html"
+              class="nav-link"
+      >
+        Reports
+      </a>
+
+    </nav>
+
+  </div>
+
+</header>
+
+
+<!-- ================= MAIN ================= -->
+
+<main class="page-container">
+
+  <div class="page-header">
+
+    <div>
+
+      <h1>
+        Edit Ticket
+      </h1>
+
+      <p>
+        Update the information of the selected ticket.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- ================= EDIT FORM ================= -->
+
+  <section class="new-report-card">
+
+    <div class="form-header">
+
+      <div>
+
+        <h2>
+          Ticket Information
+        </h2>
+
+        <p class="ticket-id">
+          Ticket ID: #TCK-1001
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <form id="editTicketForm">
+
+
+      <!-- Customer -->
+
+      <div class="form-group">
+
+        <label for="username">
+          Customer Username
+        </label>
+
+        <input
+                type="text"
+                id="username"
+                value="alihasanlia"
+                readonly
+        >
+
+      </div>
+
+
+      <!-- Sport -->
+
+      <div class="form-group">
+
+        <label for="sport">
+          Sport
+        </label>
+
+        <select
+                id="sport"
+                name="sport"
+        >
+
+          <option value="football" selected>
+            Football
+          </option>
+
+          <option value="basketball">
+            Basketball
+          </option>
+
+          <option value="volleyball">
+            Volleyball
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- Match -->
+
+      <div class="form-group">
+
+        <label for="match">
+          Match
+        </label>
+
+        <input
+                type="text"
+                id="match"
+                name="match"
+                value="Team A vs Team B"
+                required
+        >
+
+      </div>
+
+
+      <!-- Date -->
+
+      <div class="form-group">
+
+        <label for="matchDate">
+          Match Date
+        </label>
+
+        <input
+                type="date"
+                id="matchDate"
+                name="matchDate"
+                value="2026-08-15"
+                required
+        >
+
+      </div>
+
+
+      <!-- Time -->
+
+      <div class="form-group">
+
+        <label for="matchTime">
+          Match Time
+        </label>
+
+        <input
+                type="time"
+                id="matchTime"
+                name="matchTime"
+                value="18:30"
+                required
+        >
+
+      </div>
+
+
+      <!-- Stadium -->
+
+      <div class="form-group">
+
+        <label for="stadium">
+          Stadium
+        </label>
+
+        <input
+                type="text"
+                id="stadium"
+                name="stadium"
+                value="Azadi Stadium"
+                required
+        >
+
+      </div>
+
+
+      <!-- Ticket Category -->
+
+      <div class="form-group">
+
+        <label for="category">
+          Ticket Category
+        </label>
+
+        <select
+                id="category"
+                name="category"
+        >
+
+          <option value="VIP" selected>
+            VIP
+          </option>
+
+          <option value="Regular">
+            Regular
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- Seat -->
+
+      <div class="form-group">
+
+        <label for="seat">
+          Seat
+        </label>
+
+        <input
+                type="text"
+                id="seat"
+                name="seat"
+                value="A-12"
+                required
+        >
+
+      </div>
+
+
+      <!-- Price -->
+
+      <div class="form-group">
+
+        <label for="price">
+          Price
+        </label>
+
+        <input
+                type="number"
+                id="price"
+                name="price"
+                value="1000000"
+                min="0"
+                required
+        >
+
+      </div>
+
+
+      <!-- Status -->
+
+      <div class="form-group">
+
+        <label for="status">
+          Status
+        </label>
+
+        <select
+                id="status"
+                name="status"
+        >
+
+          <option value="ACTIVE" selected>
+            ACTIVE
+          </option>
+
+          <option value="USED">
+            USED
+          </option>
+
+          <option value="CANCELLED">
+            CANCELLED
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- Actions -->
+
+      <div class="report-actions">
+
+        <a
+                href="admin-tickets.html"
+                class="edit-btn"
+        >
+          Back
+        </a>
+
+        <button
+                type="submit"
+                class="primary-btn"
+        >
+          Save Changes
+        </button>
+
+      </div>
+
+
+    </form>
+
+  </section>
+
+</main>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="main-footer">
+
+  <p>
+    © 2026 PlayTix. All Rights Reserved.
+  </p>
+
+</footer>
+
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script>
+
+  const editTicketForm =
+          document.getElementById("editTicketForm");
+
+
+  editTicketForm.addEventListener(
+          "submit",
+          function (event) {
+
+            event.preventDefault();
+
+
+            const ticketData = {
+
+              ticketId: "TCK-1001",
+
+              sport:
+              document.getElementById("sport").value,
+
+              match:
+              document.getElementById("match").value,
+
+              date:
+              document.getElementById("matchDate").value,
+
+              time:
+              document.getElementById("matchTime").value,
+
+              stadium:
+              document.getElementById("stadium").value,
+
+              category:
+              document.getElementById("category").value,
+
+              seat:
+              document.getElementById("seat").value,
+
+              price:
+              document.getElementById("price").value,
+
+              status:
+              document.getElementById("status").value
+
+            };
+
+
+            /*
+             * Backend connection will be added later.
+             *
+             * Example:
+             *
+             * PUT /api/tickets/{ticketId}
+             *
+             * Body:
+             *
+             * {
+             *     sport,
+             *     match,
+             *     date,
+             *     time,
+             *     stadium,
+             *     category,
+             *     seat,
+             *     price,
+             *     status
+             * }
+             */
+
+
+            console.log(
+                    "Updated ticket:",
+                    ticketData
+            );
+
+
+            alert(
+                    "Ticket has been updated successfully."
+            );
+
+
+            window.location.href =
+                    "admin-tickets.html";
+
+          }
+  );
+
+</script>
+
+</body>
+
+</html>
