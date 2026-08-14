@@ -1,62 +1,216 @@
 package com.playtix.sports_event_ticketing_platform.repository;
 
 import com.playtix.sports_event_ticketing_platform.domain.entity.members.AccountStatus;
+import com.playtix.sports_event_ticketing_platform.domain.entity.members.Role;
 import com.playtix.sports_event_ticketing_platform.domain.entity.members.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository extends JpaRepository<User, UUID> {
+@Repository
+public class UserRepository {
 
-    Optional<User> findByEmail(String email);
+    private final JdbcTemplate jdbcTemplate;
 
-    
-    boolean existsByEmail(String email);
+    public UserRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
-    List<User> findByFirstname(String firstname);
+    private final RowMapper<User> userRowMapper = (rs, rowNum) -> {
+        User user = new User();
+        user.setId(rs.getObject("id", UUID.class));
+        user.setFirstname(rs.getString("firstname"));
+        user.setLastname(rs.getString("lastname"));
+        user.setEmail(rs.getString("email"));
+        user.setPhoneNumber(rs.getString("phone_number"));
+        user.setCity(rs.getString("city"));
+        user.setPasswordHash(rs.getString("password_hash"));
+        Timestamp regDateTs = rs.getTimestamp("registration_date");
+        if (regDateTs != null) {
+            user.setRegistrationDate(regDateTs.toLocalDateTime());
+        }
+        String statusStr = rs.getString("status");
+        if (statusStr != null) {
+            user.setStatus(AccountStatus.valueOf(statusStr));
+        }
+        String roleStr = rs.getString("role");
+        if (roleStr != null) {
+            user.setRole(Role.valueOf(roleStr));
+        }
+        return user;
+    };
 
-    List<User> findByLastname(String lastname);
+    public Optional<User> findById(UUID id) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        List<User> results = jdbcTemplate.query(sql, userRowMapper, id);
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
 
-    List<User> findByCity(String city);
+    public List<User> findAll() {
+        String sql = "SELECT * FROM users";
+        return jdbcTemplate.query(sql, userRowMapper);
+    }
 
-    List<User> findByStatus(AccountStatus status);
+    public User save(User user) {
+        if (user.getId() == null) {
+            user.setId(UUID.randomUUID());
+            if (user.getRegistrationDate() == null) {
+                user.setRegistrationDate(LocalDateTime.now());
+            }
+            if (user.getRole() == null) {
+                user.setRole(Role.USER);
+            }
+            String sql = "INSERT INTO users (id, firstname, lastname, email, phone_number, city, password_hash, registration_date, status, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            jdbcTemplate.update(sql,
+                    user.getId(),
+                    user.getFirstname(),
+                    user.getLastname(),
+                    user.getEmail(),
+                    user.getPhoneNumber(),
+                    user.getCity(),
+                    user.getPasswordHash(),
+                    user.getRegistrationDate() != null ? Timestamp.valueOf(user.getRegistrationDate()) : null,
+                    user.getStatus() != null ? user.getStatus().name() : null,
+                    user.getRole() != null ? user.getRole().name() : null
+            );
+        } else {
+            String sql = "UPDATE users SET firstname = ?, lastname = ?, email = ?, phone_number = ?, city = ?, password_hash = ?, registration_date = ?, status = ?, role = ? WHERE id = ?";
+            jdbcTemplate.update(sql,
+                    user.getFirstname(),
+                    user.getLastname(),
+                    user.getEmail(),
+                    user.getPhoneNumber(),
+                    user.getCity(),
+                    user.getPasswordHash(),
+                    user.getRegistrationDate() != null ? Timestamp.valueOf(user.getRegistrationDate()) : null,
+                    user.getStatus() != null ? user.getStatus().name() : null,
+                    user.getRole() != null ? user.getRole().name() : null,
+                    user.getId()
+            );
+        }
+        return user;
+    }
 
-    List<User> findByFirstnameAndLastname(String firstname, String lastname);
+    public boolean existsById(UUID id) {
+        String sql = "SELECT COUNT(*) FROM users WHERE id = ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, id);
+        return count != null && count > 0;
+    }
 
-    Optional<User> findByPhoneNumber(String phoneNumber);
+    public long count() {
+        String sql = "SELECT COUNT(*) FROM users";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class);
+        return count != null ? count : 0;
+    }
 
-    List<User> findByRegistrationDateAfter(LocalDateTime date);
+    public void deleteById(UUID id) {
+        String sql = "DELETE FROM users WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
 
-    List<User> findByRegistrationDateBefore(LocalDateTime date);
+    public void delete(User user) {
+        if (user != null && user.getId() != null) {
+            deleteById(user.getId());
+        }
+    }
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.reports WHERE u.id = :userId")
-    Optional<User> findByIdWithReports(@Param("userId") UUID userId);
+    public Optional<User> findByEmail(String email) {
+        String sql = "SELECT * FROM users WHERE email = ?";
+        List<User> results = jdbcTemplate.query(sql, userRowMapper, email);
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.payments WHERE u.id = :userId")
-    Optional<User> findByIdWithPayments(@Param("userId") UUID userId);
+    public boolean existsByEmail(String email) {
+        String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, email);
+        return count != null && count > 0;
+    }
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.reservedTickets WHERE u.id = :userId")
-    Optional<User> findByIdWithReservations(@Param("userId") UUID userId);
+    public List<User> findByFirstname(String firstname) {
+        String sql = "SELECT * FROM users WHERE firstname = ?";
+        return jdbcTemplate.query(sql, userRowMapper, firstname);
+    }
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.canceledTickets WHERE u.id = :userId")
-    Optional<User> findByIdWithCanceledTickets(@Param("userId") UUID userId);
+    public List<User> findByLastname(String lastname) {
+        String sql = "SELECT * FROM users WHERE lastname = ?";
+        return jdbcTemplate.query(sql, userRowMapper, lastname);
+    }
 
-    @Query("SELECT u FROM User u " +
-           "LEFT JOIN FETCH u.reports " +
-           "LEFT JOIN FETCH u.payments " +
-           "LEFT JOIN FETCH u.reservedTickets " +
-           "LEFT JOIN FETCH u.canceledTickets " +
-           "WHERE u.id = :userId")
-    Optional<User> findByIdWithAllRelationships(@Param("userId") UUID userId);
+    public List<User> findByCity(String city) {
+        String sql = "SELECT * FROM users WHERE city = ?";
+        return jdbcTemplate.query(sql, userRowMapper, city);
+    }
 
-    long countByStatus(AccountStatus status);
+    public List<User> findByStatus(AccountStatus status) {
+        String sql = "SELECT * FROM users WHERE status = ?";
+        return jdbcTemplate.query(sql, userRowMapper, status.name());
+    }
 
-    @Query("SELECT u FROM User u WHERE u.status = 'ACTIVE'")
-    List<User> findActiveUsers();
+    public List<User> findByFirstnameAndLastname(String firstname, String lastname) {
+        String sql = "SELECT * FROM users WHERE firstname = ? AND lastname = ?";
+        return jdbcTemplate.query(sql, userRowMapper, firstname, lastname);
+    }
 
+    public Optional<User> findByPhoneNumber(String phoneNumber) {
+        String sql = "SELECT * FROM users WHERE phone_number = ?";
+        List<User> results = jdbcTemplate.query(sql, userRowMapper, phoneNumber);
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+
+    public List<User> findByRegistrationDateAfter(LocalDateTime date) {
+        String sql = "SELECT * FROM users WHERE registration_date > ?";
+        return jdbcTemplate.query(sql, userRowMapper, Timestamp.valueOf(date));
+    }
+
+    public List<User> findByRegistrationDateBefore(LocalDateTime date) {
+        String sql = "SELECT * FROM users WHERE registration_date < ?";
+        return jdbcTemplate.query(sql, userRowMapper, Timestamp.valueOf(date));
+    }
+
+    public Optional<User> findByIdWithReports(UUID userId) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        List<User> results = jdbcTemplate.query(sql, userRowMapper, userId);
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+
+    public Optional<User> findByIdWithPayments(UUID userId) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        List<User> results = jdbcTemplate.query(sql, userRowMapper, userId);
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+
+    public Optional<User> findByIdWithReservations(UUID userId) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        List<User> results = jdbcTemplate.query(sql, userRowMapper, userId);
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+
+    public Optional<User> findByIdWithCanceledTickets(UUID userId) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        List<User> results = jdbcTemplate.query(sql, userRowMapper, userId);
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+
+    public Optional<User> findByIdWithAllRelationships(UUID userId) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        List<User> results = jdbcTemplate.query(sql, userRowMapper, userId);
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+
+    public long countByStatus(AccountStatus status) {
+        String sql = "SELECT COUNT(*) FROM users WHERE status = ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, status.name());
+        return count != null ? count : 0;
+    }
+
+    public List<User> findActiveUsers() {
+        String sql = "SELECT * FROM users WHERE status = 'ACTIVE'";
+        return jdbcTemplate.query(sql, userRowMapper);
+    }
 }

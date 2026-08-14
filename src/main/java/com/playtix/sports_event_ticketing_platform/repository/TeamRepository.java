@@ -1,129 +1,319 @@
 package com.playtix.sports_event_ticketing_platform.repository;
 
 import com.playtix.sports_event_ticketing_platform.domain.entity.Team;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface TeamRepository extends JpaRepository<Team, UUID> {
+@Repository
+public class TeamRepository {
 
-    Optional<Team> findByName(String name);
+    private final JdbcTemplate jdbcTemplate;
 
-    List<Team> findByNameContainingIgnoreCase(String name);
+    public TeamRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
-    List<Team> findByCity(String city);
+    private final RowMapper<Team> teamRowMapper = (rs, rowNum) -> {
+        Team team = new Team();
+        team.setId(UUID.fromString(rs.getString("id")));
+        team.setName(rs.getString("name"));
+        team.setCity(rs.getString("city"));
+        team.setHomeStadium(rs.getString("home_stadium"));
+        
+        Integer foundedYear = rs.getObject("founded_year", Integer.class);
+        team.setFoundedYear(foundedYear);
+        
+        team.setCoach(rs.getString("coach"));
+        team.setLogo(rs.getString("logo"));
+        team.setDescription(rs.getString("description"));
+        
+        return team;
+    };
 
-    List<Team> findByCityContainingIgnoreCase(String city);
+    public List<Team> findAll() {
+        String sql = "SELECT * FROM teams";
+        return jdbcTemplate.query(sql, teamRowMapper);
+    }
 
-    List<Team> findByHomeStadium(String homeStadium);
+    public Optional<Team> findById(UUID id) {
+        String sql = "SELECT * FROM teams WHERE id = ?";
+        List<Team> results = jdbcTemplate.query(sql, teamRowMapper, id);
+        return results.stream().findFirst();
+    }
 
-    List<Team> findByHomeStadiumContainingIgnoreCase(String homeStadium);
+    public Team save(Team team) {
+        if (team.getId() != null && findById(team.getId()).isPresent()) {
+            String sql = "UPDATE teams SET name = ?, city = ?, home_stadium = ?, founded_year = ?, coach = ?, logo = ?, description = ? WHERE id = ?";
+            jdbcTemplate.update(sql,
+                    team.getName(),
+                    team.getCity(),
+                    team.getHomeStadium(),
+                    team.getFoundedYear(),
+                    team.getCoach(),
+                    team.getLogo(),
+                    team.getDescription(),
+                    team.getId()
+            );
+        } else {
+            String sql = "INSERT INTO teams (id, name, city, home_stadium, founded_year, coach, logo, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            if (team.getId() == null) {
+                team.setId(UUID.randomUUID());
+            }
+            jdbcTemplate.update(sql,
+                    team.getId(),
+                    team.getName(),
+                    team.getCity(),
+                    team.getHomeStadium(),
+                    team.getFoundedYear(),
+                    team.getCoach(),
+                    team.getLogo(),
+                    team.getDescription()
+            );
+        }
+        return team;
+    }
 
-    List<Team> findByFoundedYear(Integer year);
+    public void deleteById(UUID id) {
+        String sql = "DELETE FROM teams WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
 
-    List<Team> findByFoundedYearBetween(Integer startYear, Integer endYear);
+    public void delete(Team team) {
+        if (team != null && team.getId() != null) {
+            deleteById(team.getId());
+        }
+    }
 
-    List<Team> findByFoundedYearLessThan(Integer year);
+    // --- Interface Specific Query Methods ---
 
-    List<Team> findByFoundedYearGreaterThan(Integer year);
+    public Optional<Team> findByName(String name) {
+        String sql = "SELECT * FROM teams WHERE name = ?";
+        List<Team> results = jdbcTemplate.query(sql, teamRowMapper, name);
+        return results.stream().findFirst();
+    }
 
-    List<Team> findByCoach(String coach);
+    public List<Team> findByNameContainingIgnoreCase(String name) {
+        String sql = "SELECT * FROM teams WHERE LOWER(name) LIKE LOWER(?)";
+        return jdbcTemplate.query(sql, teamRowMapper, "%" + name + "%");
+    }
 
-    List<Team> findByCoachContainingIgnoreCase(String coach);
+    public List<Team> findByCity(String city) {
+        String sql = "SELECT * FROM teams WHERE city = ?";
+        return jdbcTemplate.query(sql, teamRowMapper, city);
+    }
 
-    List<Team> findByCityOrderByNameAsc(String city);
+    public List<Team> findByCityContainingIgnoreCase(String city) {
+        String sql = "SELECT * FROM teams WHERE LOWER(city) LIKE LOWER(?)";
+        return jdbcTemplate.query(sql, teamRowMapper, "%" + city + "%");
+    }
 
-    List<Team> findAllByOrderByNameAsc();
+    public List<Team> findByHomeStadium(String homeStadium) {
+        String sql = "SELECT * FROM teams WHERE home_stadium = ?";
+        return jdbcTemplate.query(sql, teamRowMapper, homeStadium);
+    }
 
-    List<Team> findAllByOrderByFoundedYearDesc();
+    public List<Team> findByHomeStadiumContainingIgnoreCase(String homeStadium) {
+        String sql = "SELECT * FROM teams WHERE LOWER(home_stadium) LIKE LOWER(?)";
+        return jdbcTemplate.query(sql, teamRowMapper, "%" + homeStadium + "%");
+    }
 
-    @Query("SELECT t FROM Team t LEFT JOIN FETCH t.homeMatches LEFT JOIN FETCH t.awayMatches WHERE t.id = :teamId")
-    Optional<Team> findByIdWithMatches(@Param("teamId") UUID teamId);
+    public List<Team> findByFoundedYear(Integer year) {
+        String sql = "SELECT * FROM teams WHERE founded_year = ?";
+        return jdbcTemplate.query(sql, teamRowMapper, year);
+    }
 
-    @Query("SELECT t FROM Team t LEFT JOIN FETCH t.homeMatches h WHERE h.matchDate > :now")
-    List<Team> findTeamsWithUpcomingHomeMatches(@Param("now") java.time.LocalDateTime now);
+    public List<Team> findByFoundedYearBetween(Integer startYear, Integer endYear) {
+        String sql = "SELECT * FROM teams WHERE founded_year BETWEEN ? AND ?";
+        return jdbcTemplate.query(sql, teamRowMapper, startYear, endYear);
+    }
 
-    @Query("SELECT t FROM Team t LEFT JOIN FETCH t.awayMatches a WHERE a.matchDate > :now")
-    List<Team> findTeamsWithUpcomingAwayMatches(@Param("now") java.time.LocalDateTime now);
+    public List<Team> findByFoundedYearLessThan(Integer year) {
+        String sql = "SELECT * FROM teams WHERE founded_year < ?";
+        return jdbcTemplate.query(sql, teamRowMapper, year);
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.id IN (SELECT DISTINCT m.homeTeam.id FROM Match m WHERE m.matchDate > :now)")
-    List<Team> findTeamsWithHomeMatchesInFuture(@Param("now") java.time.LocalDateTime now);
+    public List<Team> findByFoundedYearGreaterThan(Integer year) {
+        String sql = "SELECT * FROM teams WHERE founded_year > ?";
+        return jdbcTemplate.query(sql, teamRowMapper, year);
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.id IN (SELECT DISTINCT m.awayTeam.id FROM Match m WHERE m.matchDate > :now)")
-    List<Team> findTeamsWithAwayMatchesInFuture(@Param("now") java.time.LocalDateTime now);
+    public List<Team> findByCoach(String coach) {
+        String sql = "SELECT * FROM teams WHERE coach = ?";
+        return jdbcTemplate.query(sql, teamRowMapper, coach);
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.id IN (SELECT DISTINCT m.homeTeam.id FROM Match m UNION SELECT DISTINCT m.awayTeam.id FROM Match m)")
-    List<Team> findTeamsWithAnyMatch();
+    public List<Team> findByCoachContainingIgnoreCase(String coach) {
+        String sql = "SELECT * FROM teams WHERE LOWER(coach) LIKE LOWER(?)";
+        return jdbcTemplate.query(sql, teamRowMapper, "%" + coach + "%");
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.id NOT IN (SELECT DISTINCT m.homeTeam.id FROM Match m UNION SELECT DISTINCT m.awayTeam.id FROM Match m)")
-    List<Team> findTeamsWithoutMatches();
+    public List<Team> findByCityOrderByNameAsc(String city) {
+        String sql = "SELECT * FROM teams WHERE city = ? ORDER BY name ASC";
+        return jdbcTemplate.query(sql, teamRowMapper, city);
+    }
 
-    @Query("SELECT COUNT(h) FROM Team t JOIN t.homeMatches h WHERE t.id = :teamId AND h.matchDate > :now")
-    long countUpcomingHomeMatchesByTeamId(@Param("teamId") UUID teamId, @Param("now") java.time.LocalDateTime now);
+    public List<Team> findAllByOrderByNameAsc() {
+        String sql = "SELECT * FROM teams ORDER BY name ASC";
+        return jdbcTemplate.query(sql, teamRowMapper);
+    }
 
-    @Query("SELECT COUNT(a) FROM Team t JOIN t.awayMatches a WHERE t.id = :teamId AND a.matchDate > :now")
-    long countUpcomingAwayMatchesByTeamId(@Param("teamId") UUID teamId, @Param("now") java.time.LocalDateTime now);
+    public List<Team> findAllByOrderByFoundedYearDesc() {
+        String sql = "SELECT * FROM teams ORDER BY founded_year DESC";
+        return jdbcTemplate.query(sql, teamRowMapper);
+    }
 
-    @Query("SELECT COUNT(h) FROM Team t JOIN t.homeMatches h WHERE t.id = :teamId")
-    long countAllHomeMatchesByTeamId(@Param("teamId") UUID teamId);
+    public Optional<Team> findByIdWithMatches(UUID teamId) {
+        return findById(teamId);
+    }
 
-    @Query("SELECT COUNT(a) FROM Team t JOIN t.awayMatches a WHERE t.id = :teamId")
-    long countAllAwayMatchesByTeamId(@Param("teamId") UUID teamId);
+    public List<Team> findTeamsWithUpcomingHomeMatches(LocalDateTime now) {
+        String sql = "SELECT DISTINCT t.* FROM teams t JOIN matches m ON t.id = m.home_team_id WHERE m.match_date > ?";
+        return jdbcTemplate.query(sql, teamRowMapper, Timestamp.valueOf(now));
+    }
 
-    @Query("SELECT t.id, COUNT(h) + COUNT(a) FROM Team t LEFT JOIN t.homeMatches h LEFT JOIN t.awayMatches a GROUP BY t.id")
-    List<Object[]> countAllMatchesByTeam();
+    public List<Team> findTeamsWithUpcomingAwayMatches(LocalDateTime now) {
+        String sql = "SELECT DISTINCT t.* FROM teams t JOIN matches m ON t.id = m.away_team_id WHERE m.match_date > ?";
+        return jdbcTemplate.query(sql, teamRowMapper, Timestamp.valueOf(now));
+    }
 
-    @Query("SELECT t.id, COUNT(h) FROM Team t LEFT JOIN t.homeMatches h GROUP BY t.id ORDER BY COUNT(h) DESC")
-    List<Object[]> countHomeMatchesByTeam();
+    public List<Team> findTeamsWithHomeMatchesInFuture(LocalDateTime now) {
+        return findTeamsWithUpcomingHomeMatches(now);
+    }
 
-    @Query("SELECT t.id, COUNT(a) FROM Team t LEFT JOIN t.awayMatches a GROUP BY t.id ORDER BY COUNT(a) DESC")
-    List<Object[]> countAwayMatchesByTeam();
+    public List<Team> findTeamsWithAwayMatchesInFuture(LocalDateTime now) {
+        return findTeamsWithUpcomingAwayMatches(now);
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.foundedYear IS NOT NULL")
-    List<Team> findWithFoundedYear();
+    public List<Team> findTeamsWithAnyMatch() {
+        String sql = "SELECT * FROM teams WHERE id IN (SELECT home_team_id FROM matches WHERE home_team_id IS NOT NULL UNION SELECT away_team_id FROM matches WHERE away_team_id IS NOT NULL)";
+        return jdbcTemplate.query(sql, teamRowMapper);
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.foundedYear IS NULL")
-    List<Team> findWithoutFoundedYear();
+    public List<Team> findTeamsWithoutMatches() {
+        String sql = "SELECT * FROM teams WHERE id NOT IN (SELECT home_team_id FROM matches WHERE home_team_id IS NOT NULL UNION SELECT away_team_id FROM matches WHERE away_team_id IS NOT NULL)";
+        return jdbcTemplate.query(sql, teamRowMapper);
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.logo IS NOT NULL AND t.logo != ''")
-    List<Team> findWithLogo();
+    public long countUpcomingHomeMatchesByTeamId(UUID teamId, LocalDateTime now) {
+        String sql = "SELECT COUNT(id) FROM matches WHERE home_team_id = ? AND match_date > ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, teamId, Timestamp.valueOf(now));
+        return count != null ? count : 0L;
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.logo IS NULL OR t.logo = ''")
-    List<Team> findWithoutLogo();
+    public long countUpcomingAwayMatchesByTeamId(UUID teamId, LocalDateTime now) {
+        String sql = "SELECT COUNT(id) FROM matches WHERE away_team_id = ? AND match_date > ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, teamId, Timestamp.valueOf(now));
+        return count != null ? count : 0L;
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.description IS NOT NULL AND t.description != ''")
-    List<Team> findWithDescription();
+    public long countAllHomeMatchesByTeamId(UUID teamId) {
+        String sql = "SELECT COUNT(id) FROM matches WHERE home_team_id = ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, teamId);
+        return count != null ? count : 0L;
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.coach IS NOT NULL AND t.coach != ''")
-    List<Team> findWithCoach();
+    public long countAllAwayMatchesByTeamId(UUID teamId) {
+        String sql = "SELECT COUNT(id) FROM matches WHERE away_team_id = ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, teamId);
+        return count != null ? count : 0L;
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.id IN (SELECT DISTINCT h.homeTeam.id FROM Match h JOIN h.ticketCategories tc WHERE tc.remainingCapacity > 0)")
-    List<Team> findTeamsWithAvailableTickets();
+    public List<Object[]> countAllMatchesByTeam() {
+        String sql = "SELECT t.id, (SELECT COUNT(id) FROM matches WHERE home_team_id = t.id) + (SELECT COUNT(id) FROM matches WHERE away_team_id = t.id) as total FROM teams t ORDER BY total DESC";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getObject(1), rs.getLong(2)});
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.id IN (SELECT DISTINCT h.homeTeam.id FROM Match h WHERE h.matchDate > :now) OR t.id IN (SELECT DISTINCT a.awayTeam.id FROM Match a WHERE a.matchDate > :now)")
-    List<Team> findTeamsWithUpcomingMatches(@Param("now") java.time.LocalDateTime now);
+    public List<Object[]> countHomeMatchesByTeam() {
+        String sql = "SELECT t.id, COUNT(m.id) FROM teams t LEFT JOIN matches m ON t.id = m.home_team_id GROUP BY t.id ORDER BY COUNT(m.id) DESC";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getObject(1), rs.getLong(2)});
+    }
 
-    @Query("SELECT t FROM Team t WHERE t.id IN (SELECT DISTINCT h.homeTeam.id FROM Match h WHERE h.matchDate < :now) OR t.id IN (SELECT DISTINCT a.awayTeam.id FROM Match a WHERE a.matchDate < :now)")
-    List<Team> findTeamsWithFinishedMatches(@Param("now") java.time.LocalDateTime now);
+    public List<Object[]> countAwayMatchesByTeam() {
+        String sql = "SELECT t.id, COUNT(m.id) FROM teams t LEFT JOIN matches m ON t.id = m.away_team_id GROUP BY t.id ORDER BY COUNT(m.id) DESC";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getObject(1), rs.getLong(2)});
+    }
 
-    @Query("SELECT t.city, COUNT(t) FROM Team t GROUP BY t.city")
-    List<Object[]> countTeamsByCity();
+    public List<Team> findWithFoundedYear() {
+        String sql = "SELECT * FROM teams WHERE founded_year IS NOT NULL";
+        return jdbcTemplate.query(sql, teamRowMapper);
+    }
 
-    @Query("SELECT AVG(t.foundedYear) FROM Team t WHERE t.foundedYear IS NOT NULL")
-    Double averageFoundedYear();
+    public List<Team> findWithoutFoundedYear() {
+        String sql = "SELECT * FROM teams WHERE founded_year IS NULL";
+        return jdbcTemplate.query(sql, teamRowMapper);
+    }
 
-    @Query("SELECT MAX(t.foundedYear) FROM Team t")
-    Integer findLatestFoundedYear();
+    public List<Team> findWithLogo() {
+        String sql = "SELECT * FROM teams WHERE logo IS NOT NULL AND logo != ''";
+        return jdbcTemplate.query(sql, teamRowMapper);
+    }
 
-    @Query("SELECT MIN(t.foundedYear) FROM Team t")
-    Integer findEarliestFoundedYear();
+    public List<Team> findWithoutLogo() {
+        String sql = "SELECT * FROM teams WHERE logo IS NULL OR logo = ''";
+        return jdbcTemplate.query(sql, teamRowMapper);
+    }
 
-    boolean existsByNameIgnoreCase(String name);
+    public List<Team> findWithDescription() {
+        String sql = "SELECT * FROM teams WHERE description IS NOT NULL AND description != ''";
+        return jdbcTemplate.query(sql, teamRowMapper);
+    }
 
-    @Query("SELECT COUNT(t) > 0 FROM Team t WHERE t.name = :name AND t.city = :city")
-    boolean existsByNameAndCity(@Param("name") String name, @Param("city") String city);
+    public List<Team> findWithCoach() {
+        String sql = "SELECT * FROM teams WHERE coach IS NOT NULL AND coach != ''";
+        return jdbcTemplate.query(sql, teamRowMapper);
+    }
+
+    public List<Team> findTeamsWithAvailableTickets() {
+        String sql = "SELECT DISTINCT t.* FROM teams t JOIN matches m ON t.id = m.home_team_id JOIN ticket_categories tc ON m.id = tc.match_id WHERE tc.remaining_capacity > 0";
+        return jdbcTemplate.query(sql, teamRowMapper);
+    }
+
+    public List<Team> findTeamsWithUpcomingMatches(LocalDateTime now) {
+        String sql = "SELECT DISTINCT t.* FROM teams t JOIN matches m ON (t.id = m.home_team_id OR t.id = m.away_team_id) WHERE m.match_date > ?";
+        return jdbcTemplate.query(sql, teamRowMapper, Timestamp.valueOf(now));
+    }
+
+    public List<Team> findTeamsWithFinishedMatches(LocalDateTime now) {
+        String sql = "SELECT DISTINCT t.* FROM teams t JOIN matches m ON (t.id = m.home_team_id OR t.id = m.away_team_id) WHERE m.match_date < ?";
+        return jdbcTemplate.query(sql, teamRowMapper, Timestamp.valueOf(now));
+    }
+
+    public List<Object[]> countTeamsByCity() {
+        String sql = "SELECT city, COUNT(id) FROM teams GROUP BY city";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getString(1), rs.getLong(2)});
+    }
+
+    public Double averageFoundedYear() {
+        String sql = "SELECT AVG(founded_year) FROM teams WHERE founded_year IS NOT NULL";
+        return jdbcTemplate.queryForObject(sql, Double.class);
+    }
+
+    public Integer findLatestFoundedYear() {
+        String sql = "SELECT MAX(founded_year) FROM teams";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    public Integer findEarliestFoundedYear() {
+        String sql = "SELECT MIN(founded_year) FROM teams";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    public boolean existsByNameIgnoreCase(String name) {
+        String sql = "SELECT COUNT(id) FROM teams WHERE LOWER(name) = LOWER(?)";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, name);
+        return count != null && count > 0;
+    }
+
+    public boolean existsByNameAndCity(String name, String city) {
+        String sql = "SELECT COUNT(id) FROM teams WHERE name = ? AND city = ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, name, city);
+        return count != null && count > 0;
+    }
 }
