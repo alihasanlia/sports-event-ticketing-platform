@@ -2,116 +2,275 @@ package com.playtix.sports_event_ticketing_platform.repository;
 
 import com.playtix.sports_event_ticketing_platform.domain.entity.Sport;
 import com.playtix.sports_event_ticketing_platform.domain.entity.SportType;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface SportRepository extends JpaRepository<Sport, UUID> {
+@Repository
+public class SportRepository {
 
-    Optional<Sport> findByName(SportType name);
+    private final JdbcTemplate jdbcTemplate;
 
-    List<Sport> findByDescriptionContainingIgnoreCase(String description);
+    public SportRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
-    List<Sport> findByNumberOfPlayers(int numberOfPlayers);
+    private final RowMapper<Sport> sportRowMapper = (rs, rowNum) -> {
+        Sport sport = new Sport();
+        sport.setId(UUID.fromString(rs.getString("id")));
+        
+        String nameStr = rs.getString("name");
+        if (nameStr != null) {
+            sport.setName(SportType.valueOf(nameStr));
+        }
+        
+        sport.setDescription(rs.getString("description"));
+        sport.setNumberOfPlayers(rs.getInt("number_of_players"));
+        
+        return sport;
+    };
 
-    List<Sport> findByNumberOfPlayersBetween(int minPlayers, int maxPlayers);
+    // --- Standard CRUD Methods ---
 
-    List<Sport> findByNumberOfPlayersGreaterThan(int numberOfPlayers);
+    public List<Sport> findAll() {
+        String sql = "SELECT * FROM sports";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    List<Sport> findByNumberOfPlayersLessThan(int numberOfPlayers);
+    public Optional<Sport> findById(UUID id) {
+        String sql = "SELECT * FROM sports WHERE id = ?";
+        List<Sport> results = jdbcTemplate.query(sql, sportRowMapper, id);
+        return results.stream().findFirst();
+    }
 
-    List<Sport> findAllByOrderByNameAsc();
+    public Sport save(Sport sport) {
+        if (sport.getId() != null && findById(sport.getId()).isPresent()) {
+            String sql = "UPDATE sports SET name = ?, description = ?, number_of_players = ? WHERE id = ?";
+            jdbcTemplate.update(sql,
+                    sport.getName() != null ? sport.getName().name() : null,
+                    sport.getDescription(),
+                    sport.getNumberOfPlayers(),
+                    sport.getId()
+            );
+        } else {
+            String sql = "INSERT INTO sports (id, name, description, number_of_players) VALUES (?, ?, ?, ?)";
+            if (sport.getId() == null) {
+                sport.setId(UUID.randomUUID());
+            }
+            jdbcTemplate.update(sql,
+                    sport.getId(),
+                    sport.getName() != null ? sport.getName().name() : null,
+                    sport.getDescription(),
+                    sport.getNumberOfPlayers()
+            );
+        }
+        return sport;
+    }
 
-    @Query("SELECT s FROM Sport s LEFT JOIN FETCH s.leagues WHERE s.id = :sportId")
-    Optional<Sport> findByIdWithLeagues(@Param("sportId") UUID sportId);
+    public void deleteById(UUID id) {
+        String sql = "DELETE FROM sports WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
 
-    @Query("SELECT s FROM Sport s LEFT JOIN FETCH s.tournaments WHERE s.id = :sportId")
-    Optional<Sport> findByIdWithTournaments(@Param("sportId") UUID sportId);
+    public void delete(Sport sport) {
+        if (sport != null && sport.getId() != null) {
+            deleteById(sport.getId());
+        }
+    }
 
-    @Query("SELECT s FROM Sport s LEFT JOIN FETCH s.leagues LEFT JOIN FETCH s.tournaments WHERE s.id = :sportId")
-    Optional<Sport> findByIdWithAllRelationships(@Param("sportId") UUID sportId);
+    public Optional<Sport> findByName(SportType name) {
+        String sql = "SELECT * FROM sports WHERE name = ?";
+        List<Sport> results = jdbcTemplate.query(sql, sportRowMapper, name.name());
+        return results.stream().findFirst();
+    }
 
-    @Query("SELECT s FROM Sport s LEFT JOIN FETCH s.leagues l WHERE l.id IS NOT NULL")
-    List<Sport> findSportsWithLeagues();
+    public List<Sport> findByDescriptionContainingIgnoreCase(String description) {
+        String sql = "SELECT * FROM sports WHERE LOWER(description) LIKE LOWER(?)";
+        return jdbcTemplate.query(sql, sportRowMapper, "%" + description + "%");
+    }
 
-    @Query("SELECT s FROM Sport s LEFT JOIN FETCH s.tournaments t WHERE t.id IS NOT NULL")
-    List<Sport> findSportsWithTournaments();
+    public List<Sport> findByNumberOfPlayers(int numberOfPlayers) {
+        String sql = "SELECT * FROM sports WHERE number_of_players = ?";
+        return jdbcTemplate.query(sql, sportRowMapper, numberOfPlayers);
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.id IN (SELECT DISTINCT l.sport.id FROM League l)")
-    List<Sport> findSportsWithAtLeastOneLeague();
+    public List<Sport> findByNumberOfPlayersBetween(int minPlayers, int maxPlayers) {
+        String sql = "SELECT * FROM sports WHERE number_of_players BETWEEN ? AND ?";
+        return jdbcTemplate.query(sql, sportRowMapper, minPlayers, maxPlayers);
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.id IN (SELECT DISTINCT t.sport.id FROM Tournament t)")
-    List<Sport> findSportsWithAtLeastOneTournament();
+    public List<Sport> findByNumberOfPlayersGreaterThan(int numberOfPlayers) {
+        String sql = "SELECT * FROM sports WHERE number_of_players > ?";
+        return jdbcTemplate.query(sql, sportRowMapper, numberOfPlayers);
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.id NOT IN (SELECT DISTINCT l.sport.id FROM League l)")
-    List<Sport> findSportsWithoutLeagues();
+    public List<Sport> findByNumberOfPlayersLessThan(int numberOfPlayers) {
+        String sql = "SELECT * FROM sports WHERE number_of_players < ?";
+        return jdbcTemplate.query(sql, sportRowMapper, numberOfPlayers);
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.id NOT IN (SELECT DISTINCT t.sport.id FROM Tournament t)")
-    List<Sport> findSportsWithoutTournaments();
+    public List<Sport> findAllByOrderByNameAsc() {
+        String sql = "SELECT * FROM sports ORDER BY name ASC";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.id NOT IN (SELECT DISTINCT l.sport.id FROM League l) AND s.id NOT IN (SELECT DISTINCT t.sport.id FROM Tournament t)")
-    List<Sport> findSportsWithoutAnyAssociation();
+    public Optional<Sport> findByIdWithLeagues(UUID sportId) {
+        String sql = "SELECT * FROM sports WHERE id = ?";
+        return jdbcTemplate.query(sql, sportRowMapper, sportId).stream().findFirst();
+    }
 
-    @Query("SELECT COUNT(l) FROM Sport s JOIN s.leagues l WHERE s.id = :sportId")
-    long countLeaguesBySportId(@Param("sportId") UUID sportId);
+    public Optional<Sport> findByIdWithTournaments(UUID sportId) {
+        String sql = "SELECT * FROM sports WHERE id = ?";
+        return jdbcTemplate.query(sql, sportRowMapper, sportId).stream().findFirst();
+    }
 
-    @Query("SELECT COUNT(t) FROM Sport s JOIN s.tournaments t WHERE s.id = :sportId")
-    long countTournamentsBySportId(@Param("sportId") UUID sportId);
+    public Optional<Sport> findByIdWithAllRelationships(UUID sportId) {
+        String sql = "SELECT * FROM sports WHERE id = ?";
+        return jdbcTemplate.query(sql, sportRowMapper, sportId).stream().findFirst();
+    }
 
-    @Query("SELECT s.id, COUNT(l) FROM Sport s LEFT JOIN s.leagues l GROUP BY s.id ORDER BY COUNT(l) DESC")
-    List<Object[]> countLeaguesBySport();
+    public List<Sport> findSportsWithLeagues() {
+        String sql = "SELECT DISTINCT s.* FROM sports s JOIN leagues l ON s.id = l.sport_id";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    @Query("SELECT s.id, COUNT(t) FROM Sport s LEFT JOIN s.tournaments t GROUP BY s.id ORDER BY COUNT(t) DESC")
-    List<Object[]> countTournamentsBySport();
+    public List<Sport> findSportsWithTournaments() {
+        String sql = "SELECT DISTINCT s.* FROM sports s JOIN tournaments t ON s.id = t.sport_id";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    @Query("SELECT s.id, COUNT(l) + COUNT(t) FROM Sport s LEFT JOIN s.leagues l LEFT JOIN s.tournaments t GROUP BY s.id ORDER BY (COUNT(l) + COUNT(t)) DESC")
-    List<Object[]> countTotalAssociationsBySport();
+    public List<Sport> findSportsWithAtLeastOneLeague() {
+        String sql = "SELECT DISTINCT s.* FROM sports s JOIN leagues l ON s.id = l.sport_id";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.description IS NOT NULL AND s.description != ''")
-    List<Sport> findWithDescription();
+    public List<Sport> findSportsWithAtLeastOneTournament() {
+        String sql = "SELECT DISTINCT s.* FROM sports s JOIN tournaments t ON s.id = t.sport_id";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.description IS NULL OR s.description = ''")
-    List<Sport> findWithoutDescription();
+    public List<Sport> findSportsWithoutLeagues() {
+        String sql = "SELECT * FROM sports WHERE id NOT IN (SELECT DISTINCT sport_id FROM leagues WHERE sport_id IS NOT NULL)";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.numberOfPlayers = (SELECT MAX(s2.numberOfPlayers) FROM Sport s2)")
-    List<Sport> findSportsWithMostPlayers();
+    public List<Sport> findSportsWithoutTournaments() {
+        String sql = "SELECT * FROM sports WHERE id NOT IN (SELECT DISTINCT sport_id FROM tournaments WHERE sport_id IS NOT NULL)";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.numberOfPlayers = (SELECT MIN(s2.numberOfPlayers) FROM Sport s2)")
-    List<Sport> findSportsWithFewestPlayers();
+    public List<Sport> findSportsWithoutAnyAssociation() {
+        String sql = "SELECT * FROM sports WHERE id NOT IN (SELECT DISTINCT sport_id FROM leagues WHERE sport_id IS NOT NULL) " +
+                     "AND id NOT IN (SELECT DISTINCT sport_id FROM tournaments WHERE sport_id IS NOT NULL)";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    @Query("SELECT AVG(s.numberOfPlayers) FROM Sport s")
-    Double averageNumberOfPlayers();
+    public long countLeaguesBySportId(UUID sportId) {
+        String sql = "SELECT COUNT(id) FROM leagues WHERE sport_id = ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, sportId);
+        return count != null ? count : 0L;
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.numberOfPlayers > (SELECT AVG(s2.numberOfPlayers) FROM Sport s2)")
-    List<Sport> findSportsAboveAveragePlayers();
+    public long countTournamentsBySportId(UUID sportId) {
+        String sql = "SELECT COUNT(id) FROM tournaments WHERE sport_id = ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, sportId);
+        return count != null ? count : 0L;
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.numberOfPlayers < (SELECT AVG(s2.numberOfPlayers) FROM Sport s2)")
-    List<Sport> findSportsBelowAveragePlayers();
+    public List<Object[]> countLeaguesBySport() {
+        String sql = "SELECT s.id, COUNT(l.id) FROM sports s LEFT JOIN leagues l ON s.id = l.sport_id GROUP BY s.id ORDER BY COUNT(l.id) DESC";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getObject(1), rs.getLong(2)});
+    }
 
-    @Query("SELECT s.name, COUNT(l) FROM Sport s LEFT JOIN s.leagues l GROUP BY s.name")
-    List<Object[]> countLeaguesBySportName();
+    public List<Object[]> countTournamentsBySport() {
+        String sql = "SELECT s.id, COUNT(t.id) FROM sports s LEFT JOIN tournaments t ON s.id = t.sport_id GROUP BY s.id ORDER BY COUNT(t.id) DESC";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getObject(1), rs.getLong(2)});
+    }
 
-    @Query("SELECT s.name, COUNT(t) FROM Sport s LEFT JOIN s.tournaments t GROUP BY s.name")
-    List<Object[]> countTournamentsBySportName();
+    public List<Object[]> countTotalAssociationsBySport() {
+        String sql = "SELECT s.id, (SELECT COUNT(l.id) FROM leagues l WHERE l.sport_id = s.id) + (SELECT COUNT(t.id) FROM tournaments t WHERE t.sport_id = s.id) as total " +
+                     "FROM sports s ORDER BY total DESC";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getObject(1), rs.getLong(2)});
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.id IN (SELECT DISTINCT m.sport.id FROM League m) AND s.id IN (SELECT DISTINCT t.sport.id FROM Tournament t)")
-    List<Sport> findSportsWithBothLeaguesAndTournaments();
+    public List<Sport> findWithDescription() {
+        String sql = "SELECT * FROM sports WHERE description IS NOT NULL AND description != ''";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    @Query("SELECT s FROM Sport s WHERE s.id IN (SELECT DISTINCT m.sport.id FROM League m) OR s.id IN (SELECT DISTINCT t.sport.id FROM Tournament t)")
-    List<Sport> findSportsWithLeaguesOrTournaments();
+    public List<Sport> findWithoutDescription() {
+        String sql = "SELECT * FROM sports WHERE description IS NULL OR description = ''";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    boolean existsByName(SportType name);
+    public List<Sport> findSportsWithMostPlayers() {
+        String sql = "SELECT * FROM sports WHERE number_of_players = (SELECT MAX(number_of_players) FROM sports)";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    @Query("SELECT COUNT(s) > 0 FROM Sport s WHERE s.name = :name")
-    boolean existsBySportType(@Param("name") SportType name);
+    public List<Sport> findSportsWithFewestPlayers() {
+        String sql = "SELECT * FROM sports WHERE number_of_players = (SELECT MIN(number_of_players) FROM sports)";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
 
-    @Query("SELECT s FROM Sport s ORDER BY s.numberOfPlayers DESC")
-    List<Sport> findAllOrderByNumberOfPlayersDesc();
+    public Double averageNumberOfPlayers() {
+        String sql = "SELECT AVG(number_of_players) FROM sports";
+        return jdbcTemplate.queryForObject(sql, Double.class);
+    }
 
-    @Query("SELECT s FROM Sport s WHERE LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<Sport> searchByDescriptionKeyword(@Param("keyword") String keyword);
+    public List<Sport> findSportsAboveAveragePlayers() {
+        String sql = "SELECT * FROM sports WHERE number_of_players > (SELECT AVG(number_of_players) FROM sports)";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
+
+    public List<Sport> findSportsBelowAveragePlayers() {
+        String sql = "SELECT * FROM sports WHERE number_of_players < (SELECT AVG(number_of_players) FROM sports)";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
+
+    public List<Object[]> countLeaguesBySportName() {
+        String sql = "SELECT s.name, COUNT(l.id) FROM sports s LEFT JOIN leagues l ON s.id = l.sport_id GROUP BY s.name";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getString(1), rs.getLong(2)});
+    }
+
+    public List<Object[]> countTournamentsBySportName() {
+        String sql = "SELECT s.name, COUNT(t.id) FROM sports s LEFT JOIN tournaments t ON s.id = t.sport_id GROUP BY s.name";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getString(1), rs.getLong(2)});
+    }
+
+    public List<Sport> findSportsWithBothLeaguesAndTournaments() {
+        String sql = "SELECT DISTINCT s.* FROM sports s JOIN leagues l ON s.id = l.sport_id JOIN tournaments t ON s.id = t.sport_id";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
+
+    public List<Sport> findSportsWithLeaguesOrTournaments() {
+        String sql = "SELECT DISTINCT s.* FROM sports s LEFT JOIN leagues l ON s.id = l.sport_id LEFT JOIN tournaments t ON s.id = t.sport_id WHERE l.id IS NOT NULL OR t.id IS NOT NULL";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
+
+    public boolean existsByName(SportType name) {
+        String sql = "SELECT COUNT(id) FROM sports WHERE name = ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, name.name());
+        return count != null && count > 0;
+    }
+
+    public boolean existsBySportType(SportType name) {
+        String sql = "SELECT COUNT(id) FROM sports WHERE name = ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, name.name());
+        return count != null && count > 0;
+    }
+
+    public List<Sport> findAllOrderByNumberOfPlayersDesc() {
+        String sql = "SELECT * FROM sports ORDER BY number_of_players DESC";
+        return jdbcTemplate.query(sql, sportRowMapper);
+    }
+
+    public List<Sport> searchByDescriptionKeyword(String keyword) {
+        String sql = "SELECT * FROM sports WHERE LOWER(description) LIKE LOWER(?)";
+        return jdbcTemplate.query(sql, sportRowMapper, "%" + keyword + "%");
+    }
 }

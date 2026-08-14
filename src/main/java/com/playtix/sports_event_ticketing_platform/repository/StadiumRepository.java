@@ -1,109 +1,265 @@
 package com.playtix.sports_event_ticketing_platform.repository;
 
 import com.playtix.sports_event_ticketing_platform.domain.entity.Stadium;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface StadiumRepository extends JpaRepository<Stadium, UUID> {
+@Repository
+public class StadiumRepository {
 
-    List<Stadium> findByNameContainingIgnoreCase(String name);
+    private final JdbcTemplate jdbcTemplate;
 
-    List<Stadium> findByCity(String city);
+    public StadiumRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
-    List<Stadium> findByCityContainingIgnoreCase(String city);
+    private final RowMapper<Stadium> stadiumRowMapper = (rs, rowNum) -> {
+        Stadium stadium = new Stadium();
+        stadium.setId(UUID.fromString(rs.getString("id")));
+        stadium.setName(rs.getString("name"));
+        stadium.setCity(rs.getString("city"));
+        stadium.setCapacity(rs.getInt("capacity"));
+        stadium.setAddress(rs.getString("address"));
+        return stadium;
+    };
 
-    List<Stadium> findByCapacityGreaterThanEqual(int capacity);
+    public List<Stadium> findAll() {
+        String sql = "SELECT * FROM stadiums";
+        return jdbcTemplate.query(sql, stadiumRowMapper);
+    }
 
-    List<Stadium> findByCapacityLessThanEqual(int capacity);
+    public Optional<Stadium> findById(UUID id) {
+        String sql = "SELECT * FROM stadiums WHERE id = ?";
+        List<Stadium> results = jdbcTemplate.query(sql, stadiumRowMapper, id);
+        return results.stream().findFirst();
+    }
 
-    List<Stadium> findByCapacityBetween(int minCapacity, int maxCapacity);
+    public Stadium save(Stadium stadium) {
+        if (stadium.getId() != null && findById(stadium.getId()).isPresent()) {
+            String sql = "UPDATE stadiums SET name = ?, city = ?, capacity = ?, address = ? WHERE id = ?";
+            jdbcTemplate.update(sql,
+                    stadium.getName(),
+                    stadium.getCity(),
+                    stadium.getCapacity(),
+                    stadium.getAddress(),
+                    stadium.getId()
+            );
+        } else {
+            String sql = "INSERT INTO stadiums (id, name, city, capacity, address) VALUES (?, ?, ?, ?, ?)";
+            if (stadium.getId() == null) {
+                stadium.setId(UUID.randomUUID());
+            }
+            jdbcTemplate.update(sql,
+                    stadium.getId(),
+                    stadium.getName(),
+                    stadium.getCity(),
+                    stadium.getCapacity(),
+                    stadium.getAddress()
+            );
+        }
+        return stadium;
+    }
 
-    List<Stadium> findByAddressContainingIgnoreCase(String address);
+    public void deleteById(UUID id) {
+        String sql = "DELETE FROM stadiums WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
 
-    Optional<Stadium> findByName(String name);
+    public void delete(Stadium stadium) {
+        if (stadium != null && stadium.getId() != null) {
+            deleteById(stadium.getId());
+        }
+    }
 
-    List<Stadium> findByCityOrderByNameAsc(String city);
+    // --- Interface Specific Query Methods ---
 
-    List<Stadium> findAllByOrderByNameAsc();
+    public List<Stadium> findByNameContainingIgnoreCase(String name) {
+        String sql = "SELECT * FROM stadiums WHERE LOWER(name) LIKE LOWER(?)";
+        return jdbcTemplate.query(sql, stadiumRowMapper, "%" + name + "%");
+    }
 
-    List<Stadium> findAllByOrderByCapacityDesc();
+    public List<Stadium> findByCity(String city) {
+        String sql = "SELECT * FROM stadiums WHERE city = ?";
+        return jdbcTemplate.query(sql, stadiumRowMapper, city);
+    }
 
-    @Query("SELECT s FROM Stadium s LEFT JOIN FETCH s.matches WHERE s.id = :stadiumId")
-    Optional<Stadium> findByIdWithMatches(@Param("stadiumId") UUID stadiumId);
+    public List<Stadium> findByCityContainingIgnoreCase(String city) {
+        String sql = "SELECT * FROM stadiums WHERE LOWER(city) LIKE LOWER(?)";
+        return jdbcTemplate.query(sql, stadiumRowMapper, "%" + city + "%");
+    }
 
-    @Query("SELECT s FROM Stadium s LEFT JOIN FETCH s.matches m WHERE m.matchDate > :now")
-    List<Stadium> findStadiumsWithUpcomingMatches(@Param("now") java.time.LocalDateTime now);
+    public List<Stadium> findByCapacityGreaterThanEqual(int capacity) {
+        String sql = "SELECT * FROM stadiums WHERE capacity >= ?";
+        return jdbcTemplate.query(sql, stadiumRowMapper, capacity);
+    }
 
-    @Query("SELECT s FROM Stadium s LEFT JOIN FETCH s.matches m WHERE m.matchDate < :now")
-    List<Stadium> findStadiumsWithFinishedMatches(@Param("now") java.time.LocalDateTime now);
+    public List<Stadium> findByCapacityLessThanEqual(int capacity) {
+        String sql = "SELECT * FROM stadiums WHERE capacity <= ?";
+        return jdbcTemplate.query(sql, stadiumRowMapper, capacity);
+    }
 
-    @Query("SELECT s FROM Stadium s WHERE s.id IN (SELECT DISTINCT m.stadium.id FROM Match m WHERE m.matchDate > :now)")
-    List<Stadium> findStadiumsWithFutureMatches(@Param("now") java.time.LocalDateTime now);
+    public List<Stadium> findByCapacityBetween(int minCapacity, int maxCapacity) {
+        String sql = "SELECT * FROM stadiums WHERE capacity BETWEEN ? AND ?";
+        return jdbcTemplate.query(sql, stadiumRowMapper, minCapacity, maxCapacity);
+    }
 
-    @Query("SELECT s FROM Stadium s WHERE s.id IN (SELECT DISTINCT m.stadium.id FROM Match m WHERE m.matchDate < :now)")
-    List<Stadium> findStadiumsWithPastMatches(@Param("now") java.time.LocalDateTime now);
+    public List<Stadium> findByAddressContainingIgnoreCase(String address) {
+        String sql = "SELECT * FROM stadiums WHERE LOWER(address) LIKE LOWER(?)";
+        return jdbcTemplate.query(sql, stadiumRowMapper, "%" + address + "%");
+    }
 
-    @Query("SELECT s FROM Stadium s WHERE s.id IN (SELECT DISTINCT m.stadium.id FROM Match m WHERE m.matchDate BETWEEN :start AND :end)")
-    List<Stadium> findStadiumsWithMatchesInDateRange(@Param("start") java.time.LocalDateTime start, @Param("end") java.time.LocalDateTime end);
+    public Optional<Stadium> findByName(String name) {
+        String sql = "SELECT * FROM stadiums WHERE name = ?";
+        List<Stadium> results = jdbcTemplate.query(sql, stadiumRowMapper, name);
+        return results.stream().findFirst();
+    }
 
-    @Query("SELECT s FROM Stadium s WHERE s.capacity > (SELECT AVG(s2.capacity) FROM Stadium s2)")
-    List<Stadium> findStadiumsAboveAverageCapacity();
+    public List<Stadium> findByCityOrderByNameAsc(String city) {
+        String sql = "SELECT * FROM stadiums WHERE city = ? ORDER BY name ASC";
+        return jdbcTemplate.query(sql, stadiumRowMapper, city);
+    }
 
-    @Query("SELECT s FROM Stadium s WHERE s.capacity < (SELECT AVG(s2.capacity) FROM Stadium s2)")
-    List<Stadium> findStadiumsBelowAverageCapacity();
+    public List<Stadium> findAllByOrderByNameAsc() {
+        String sql = "SELECT * FROM stadiums ORDER BY name ASC";
+        return jdbcTemplate.query(sql, stadiumRowMapper);
+    }
 
-    @Query("SELECT COUNT(m) FROM Stadium s JOIN s.matches m WHERE s.id = :stadiumId AND m.matchDate > :now")
-    long countUpcomingMatchesByStadiumId(@Param("stadiumId") UUID stadiumId, @Param("now") java.time.LocalDateTime now);
+    public List<Stadium> findAllByOrderByCapacityDesc() {
+        String sql = "SELECT * FROM stadiums ORDER BY capacity DESC";
+        return jdbcTemplate.query(sql, stadiumRowMapper);
+    }
 
-    @Query("SELECT COUNT(m) FROM Stadium s JOIN s.matches m WHERE s.id = :stadiumId AND m.matchDate < :now")
-    long countFinishedMatchesByStadiumId(@Param("stadiumId") UUID stadiumId, @Param("now") java.time.LocalDateTime now);
+    public Optional<Stadium> findByIdWithMatches(UUID stadiumId) {
+        return findById(stadiumId);
+    }
 
-    @Query("SELECT s.id, COUNT(m) FROM Stadium s LEFT JOIN s.matches m GROUP BY s.id")
-    List<Object[]> countMatchesByStadium();
+    public List<Stadium> findStadiumsWithUpcomingMatches(LocalDateTime now) {
+        String sql = "SELECT DISTINCT s.* FROM stadiums s JOIN matches m ON s.id = m.stadium_id WHERE m.match_date > ?";
+        return jdbcTemplate.query(sql, stadiumRowMapper, Timestamp.valueOf(now));
+    }
 
-    @Query("SELECT s.id, SUM(m.ticketCategories.SIZE()) FROM Stadium s LEFT JOIN s.matches m LEFT JOIN m.ticketCategories tc GROUP BY s.id")
-    List<Object[]> countTicketCategoriesByStadium();
+    public List<Stadium> findStadiumsWithFinishedMatches(LocalDateTime now) {
+        String sql = "SELECT DISTINCT s.* FROM stadiums s JOIN matches m ON s.id = m.stadium_id WHERE m.match_date < ?";
+        return jdbcTemplate.query(sql, stadiumRowMapper, Timestamp.valueOf(now));
+    }
 
-    @Query("SELECT s.city, COUNT(s) FROM Stadium s GROUP BY s.city")
-    List<Object[]> countStadiumsByCity();
+    public List<Stadium> findStadiumsWithFutureMatches(LocalDateTime now) {
+        return findStadiumsWithUpcomingMatches(now);
+    }
 
-    @Query("SELECT s.city, AVG(s.capacity) FROM Stadium s GROUP BY s.city")
-    List<Object[]> averageCapacityByCity();
+    public List<Stadium> findStadiumsWithPastMatches(LocalDateTime now) {
+        return findStadiumsWithFinishedMatches(now);
+    }
 
-    @Query("SELECT s FROM Stadium s WHERE s.capacity = (SELECT MAX(s2.capacity) FROM Stadium s2)")
-    List<Stadium> findLargestStadiums();
+    public List<Stadium> findStadiumsWithMatchesInDateRange(LocalDateTime start, LocalDateTime end) {
+        String sql = "SELECT DISTINCT s.* FROM stadiums s JOIN matches m ON s.id = m.stadium_id WHERE m.match_date BETWEEN ? AND ?";
+        return jdbcTemplate.query(sql, stadiumRowMapper, Timestamp.valueOf(start), Timestamp.valueOf(end));
+    }
 
-    @Query("SELECT s FROM Stadium s WHERE s.capacity = (SELECT MIN(s2.capacity) FROM Stadium s2)")
-    List<Stadium> findSmallestStadiums();
+    public List<Stadium> findStadiumsAboveAverageCapacity() {
+        String sql = "SELECT * FROM stadiums WHERE capacity > (SELECT AVG(capacity) FROM stadiums)";
+        return jdbcTemplate.query(sql, stadiumRowMapper);
+    }
 
-    @Query("SELECT s FROM Stadium s WHERE s.city = :city AND s.capacity >= :minCapacity")
-    List<Stadium> findByCityAndCapacityGreaterThanEqual(@Param("city") String city, @Param("minCapacity") int minCapacity);
+    public List<Stadium> findStadiumsBelowAverageCapacity() {
+        String sql = "SELECT * FROM stadiums WHERE capacity < (SELECT AVG(capacity) FROM stadiums)";
+        return jdbcTemplate.query(sql, stadiumRowMapper);
+    }
 
-    @Query("SELECT s FROM Stadium s WHERE s.city = :city AND s.capacity <= :maxCapacity")
-    List<Stadium> findByCityAndCapacityLessThanEqual(@Param("city") String city, @Param("maxCapacity") int maxCapacity);
+    public long countUpcomingMatchesByStadiumId(UUID stadiumId, LocalDateTime now) {
+        String sql = "SELECT COUNT(id) FROM matches WHERE stadium_id = ? AND match_date > ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, stadiumId, Timestamp.valueOf(now));
+        return count != null ? count : 0L;
+    }
 
-    @Query("SELECT s FROM Stadium s WHERE s.address IS NOT NULL AND s.address != ''")
-    List<Stadium> findStadiumsWithAddress();
+    public long countFinishedMatchesByStadiumId(UUID stadiumId, LocalDateTime now) {
+        String sql = "SELECT COUNT(id) FROM matches WHERE stadium_id = ? AND match_date < ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, stadiumId, Timestamp.valueOf(now));
+        return count != null ? count : 0L;
+    }
 
-    @Query("SELECT s FROM Stadium s WHERE s.address IS NULL OR s.address = ''")
-    List<Stadium> findStadiumsWithoutAddress();
+    public List<Object[]> countMatchesByStadium() {
+        String sql = "SELECT s.id, COUNT(m.id) FROM stadiums s LEFT JOIN matches m ON s.id = m.stadium_id GROUP BY s.id";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getObject(1), rs.getLong(2)});
+    }
 
-    @Query("SELECT COUNT(s) FROM Stadium s WHERE s.city = :city")
-    long countByCity(@Param("city") String city);
+    public List<Object[]> countTicketCategoriesByStadium() {
+        String sql = "SELECT s.id, COUNT(tc.id) FROM stadiums s LEFT JOIN matches m ON s.id = m.stadium_id LEFT JOIN ticket_categories tc ON m.id = tc.match_id GROUP BY s.id";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getObject(1), rs.getLong(2)});
+    }
 
-    @Query("SELECT SUM(s.capacity) FROM Stadium s")
-    Integer sumTotalCapacity();
+    public List<Object[]> countStadiumsByCity() {
+        String sql = "SELECT city, COUNT(id) FROM stadiums GROUP BY city";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getString(1), rs.getLong(2)});
+    }
 
-    @Query("SELECT SUM(s.capacity) FROM Stadium s WHERE s.city = :city")
-    Integer sumCapacityByCity(@Param("city") String city);
+    public List<Object[]> averageCapacityByCity() {
+        String sql = "SELECT city, AVG(capacity) FROM stadiums GROUP BY city";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{rs.getString(1), rs.getDouble(2)});
+    }
 
-    boolean existsByNameIgnoreCase(String name);
+    public List<Stadium> findLargestStadiums() {
+        String sql = "SELECT * FROM stadiums WHERE capacity = (SELECT MAX(capacity) FROM stadiums)";
+        return jdbcTemplate.query(sql, stadiumRowMapper);
+    }
 
-    @Query("SELECT COUNT(s) > 0 FROM Stadium s WHERE s.name = :name AND s.city = :city")
-    boolean existsByNameAndCity(@Param("name") String name, @Param("city") String city);
+    public List<Stadium> findSmallestStadiums() {
+        String sql = "SELECT * FROM stadiums WHERE capacity = (SELECT MIN(capacity) FROM stadiums)";
+        return jdbcTemplate.query(sql, stadiumRowMapper);
+    }
+
+    public List<Stadium> findByCityAndCapacityGreaterThanEqual(String city, int minCapacity) {
+        String sql = "SELECT * FROM stadiums WHERE city = ? AND capacity >= ?";
+        return jdbcTemplate.query(sql, stadiumRowMapper, city, minCapacity);
+    }
+
+    public List<Stadium> findByCityAndCapacityLessThanEqual(String city, int maxCapacity) {
+        String sql = "SELECT * FROM stadiums WHERE city = ? AND capacity <= ?";
+        return jdbcTemplate.query(sql, stadiumRowMapper, city, maxCapacity);
+    }
+
+    public List<Stadium> findStadiumsWithAddress() {
+        String sql = "SELECT * FROM stadiums WHERE address IS NOT NULL AND address != ''";
+        return jdbcTemplate.query(sql, stadiumRowMapper);
+    }
+
+    public List<Stadium> findStadiumsWithoutAddress() {
+        String sql = "SELECT * FROM stadiums WHERE address IS NULL OR address = ''";
+        return jdbcTemplate.query(sql, stadiumRowMapper);
+    }
+
+    public long countByCity(String city) {
+        String sql = "SELECT COUNT(id) FROM stadiums WHERE city = ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, city);
+        return count != null ? count : 0L;
+    }
+
+    public Integer sumTotalCapacity() {
+        String sql = "SELECT SUM(capacity) FROM stadiums";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    public Integer sumCapacityByCity(String city) {
+        String sql = "SELECT SUM(capacity) FROM stadiums WHERE city = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, city);
+    }
+
+    public boolean existsByNameIgnoreCase(String name) {
+        String sql = "SELECT COUNT(id) FROM stadiums WHERE LOWER(name) = LOWER(?)";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, name);
+        return count != null && count > 0;
+    }
+
+    public boolean existsByNameAndCity(String name, String city) {
+        String sql = "SELECT COUNT(id) FROM stadiums WHERE name = ? AND city = ?";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, name, city);
+        return count != null && count > 0;
+    }
 }
