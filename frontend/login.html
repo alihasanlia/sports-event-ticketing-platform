@@ -24,12 +24,12 @@
         <form id="loginForm">
 
             <div class="form-group">
-                <label for="username">Username</label>
+                <label for="email">Email</label>
                 <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        placeholder="Enter your username"
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Enter your email"
                         required
                 >
             </div>
@@ -55,11 +55,13 @@
                 </select>
             </div>
 
-            <button type="submit" class="primary-btn">
+            <button type="submit" class="primary-btn" id="loginButton">
                 Login
             </button>
 
         </form>
+
+        <p id="loginMessage"></p>
 
         <p class="auth-switch">
             Don't have an account?
@@ -70,29 +72,7 @@
 
 </main>
 
-<script>
-
-    const loginForm = document.getElementById("loginForm");
-
-    loginForm.addEventListener("submit", function (event) {
-
-        event.preventDefault();
-
-        const role = document.getElementById("role").value;
-
-        if (role === "USER") {
-
-            window.location.href = "index.html";
-
-        } else if (role === "SUPPORT") {
-
-            window.location.href = "admin-index.html";
-
-        }
-
-    });
-
-</script>
+<script src="js/login.js"></script>
 
 </body>
 </html>
