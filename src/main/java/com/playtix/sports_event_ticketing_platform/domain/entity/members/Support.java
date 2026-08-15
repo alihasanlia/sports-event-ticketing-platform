@@ -7,15 +7,9 @@ import java.util.stream.Collectors;
 import com.playtix.sports_event_ticketing_platform.domain.entity.report.Report;
 import com.playtix.sports_event_ticketing_platform.domain.entity.report.ReportStatus;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
-@Table(name = "supports")
 @Getter
 @Setter
 public class Support extends BaseUser {
@@ -25,8 +19,6 @@ public class Support extends BaseUser {
         this.reports = new ArrayList<>();
     }
 
-    @OneToMany(mappedBy = "support", orphanRemoval = true)
-    @OrderBy("createdAt DESC")
     private List<Report> reports;
 
     public void addReport(Report report) {
@@ -75,8 +67,8 @@ public class Support extends BaseUser {
     public String toString() {
         return "Support{" +
                 "id=" + getId() +
-                ", firstname=" + getFirstname() + '\'' +
-                ", lastname=" + getLastname() + '\'' +
+                ", firstname='" + getFirstname() + '\'' +
+                ", lastname='" + getLastname() + '\'' +
                 ", phone='" + getPhoneNumber() + '\'' +
                 ", email='" + getEmail() + '\'' +
                 ", reportsCount=" + (reports != null ? reports.size() : 0) +

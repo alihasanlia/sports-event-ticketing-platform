@@ -14,12 +14,11 @@ import com.playtix.sports_event_ticketing_platform.repository.UserRepository;
 import com.playtix.sports_event_ticketing_platform.security.CustomUserDetails;
 import com.playtix.sports_event_ticketing_platform.security.JwtUtil;
 
-import jakarta.transaction.Transactional;
-
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {

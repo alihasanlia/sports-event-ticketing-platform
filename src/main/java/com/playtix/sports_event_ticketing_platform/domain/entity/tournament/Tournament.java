@@ -8,21 +8,6 @@ import java.util.UUID;
 import com.playtix.sports_event_ticketing_platform.domain.entity.Sport;
 import com.playtix.sports_event_ticketing_platform.domain.entity.match.Match;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -33,8 +18,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name = "tournaments")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -43,56 +26,43 @@ import lombok.Setter;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Tournament {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
     @Builder.Default
     private UUID id = UUID.randomUUID();
 
     @NotBlank(message = "Tournament name is required")
-    @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(length = 500)
     private String description;
 
     @Future(message = "Start date must be in the future")
-    @Column(name = "start_date")
     private LocalDateTime startDate;
 
-    @Column(name = "end_date")
     private LocalDateTime endDate;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     @Builder.Default
     private TournamentStatus status = TournamentStatus.UPCOMING;
 
-    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Match> matches = new ArrayList<>();
 
     @NotNull(message = "Sport is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sport_id", nullable = false)
     private Sport sport;
     
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+    public void initializeDefaults() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
         if (this.status == null) {
             this.status = TournamentStatus.UPCOMING;
         }
     }
 
-    @PreUpdate
-    protected void onUpdate() {
+    public void updateTimestamp() {
         this.updatedAt = LocalDateTime.now();
     }
     
@@ -136,6 +106,7 @@ public class Tournament {
         }
         this.status = TournamentStatus.ACTIVE;
         this.startDate = LocalDateTime.now();
+        updateTimestamp();
     }
 
     public void finish() {
@@ -144,6 +115,7 @@ public class Tournament {
         }
         this.status = TournamentStatus.FINISHED;
         this.endDate = LocalDateTime.now();
+        updateTimestamp();
     }
 
     public void cancel() {
@@ -151,6 +123,7 @@ public class Tournament {
             throw new IllegalStateException("Cannot cancel a finished tournament");
         }
         this.status = TournamentStatus.CANCELLED;
+        updateTimestamp();
     }
 
     public int getMatchesCount() {
