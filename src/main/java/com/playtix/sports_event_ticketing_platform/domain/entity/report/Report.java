@@ -7,100 +7,68 @@ import com.playtix.sports_event_ticketing_platform.domain.entity.members.Support
 import com.playtix.sports_event_ticketing_platform.domain.entity.members.User;
 import com.playtix.sports_event_ticketing_platform.domain.entity.ticket.Ticket;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
-@Table(name = "reports")
 @Getter
 @Setter
 public class Report {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private ReportSubject subject;
 
     @NotBlank
     @Size(min = 10, max = 1000)
-    @Column(nullable = false, length = 1000)
     private String description;
 
-    @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "admin_response", length = 500)
     private String adminResponse;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private ReportStatus status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "support_id")
     private Support support;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_id", nullable = false)
     private Ticket ticket;
 
-    @PrePersist
-    private void onCreate() {
+    public void initializeOnCreate() {
         this.createdAt = LocalDateTime.now();
         if (this.status == null) {
             this.status = ReportStatus.PENDING;
         }
     }
 
-    @PreUpdate
-    private void onUpdate() {
+    public void updateTimestamp() {
         this.updatedAt = LocalDateTime.now();
     }
 
     public void setUser(User user) {
         this.user = user;
-        if (user != null && !user.getReports().contains(this)) {
+        if (user != null && user.getReports() != null && !user.getReports().contains(this)) {
             user.getReports().add(this);
         }
     }
 
     public void assignToSupport(Support support) {
-        if (this.support != null && this.support != support) {
+        if (this.support != null && this.support != support && this.support.getReports() != null) {
             this.support.getReports().remove(this);
         }
         this.support = support;
         this.status = ReportStatus.IN_PROGRESS;
-        if (support != null && !support.getReports().contains(this)) {
+        if (support != null && support.getReports() != null && !support.getReports().contains(this)) {
             support.getReports().add(this);
         }
+        updateTimestamp();
     }
 
     public void resolve(String response) {
@@ -109,6 +77,7 @@ public class Report {
         }
         this.status = ReportStatus.RESOLVED;
         this.adminResponse = response;
+        updateTimestamp();
     }
 
     public void reject(String reason) {
@@ -117,6 +86,7 @@ public class Report {
         }
         this.status = ReportStatus.REJECTED;
         this.adminResponse = reason;
+        updateTimestamp();
     }
 
     public void reopen() {
@@ -124,6 +94,7 @@ public class Report {
             throw new IllegalStateException("Only resolved or rejected reports can be reopened");
         }
         this.status = ReportStatus.REOPENED;
+        updateTimestamp();
     }
 
     public boolean isPending() {

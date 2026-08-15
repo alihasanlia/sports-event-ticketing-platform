@@ -7,20 +7,6 @@ import java.util.UUID;
 
 import com.playtix.sports_event_ticketing_platform.domain.entity.match.Match;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -31,8 +17,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name = "ticket_categories")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -41,44 +25,33 @@ import lombok.Setter;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class TicketCategory {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
     @Builder.Default
     private UUID id = UUID.randomUUID();
 
     @NotNull(message = "Category name is required")
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Category category;
 
     @NotNull(message = "Price is required")
     @Positive(message = "Price must be positive")
-    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
 
     @Positive(message = "Total capacity must be positive")
-    @Column(name = "total_capacity", nullable = false)
     private int totalCapacity;
 
     @PositiveOrZero(message = "Remaining capacity cannot be negative")
-    @Column(name = "remaining_capacity", nullable = false)
     private int remainingCapacity;
 
-    @Column(length = 500)
     private String description;
 
     @NotNull(message = "Match is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "match_id", nullable = false)
     private Match match;
 
-    @OneToMany(mappedBy = "ticketCategory", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Ticket> tickets = new ArrayList<>();
     
-    @PrePersist
-    protected void onCreate() {
+    // متد جایگزین @PrePersist برای مقداردهی اولیه ظرفیت
+    public void initializeDefaults() {
         if (this.remainingCapacity == 0 && this.totalCapacity > 0) {
             this.remainingCapacity = this.totalCapacity;
         }

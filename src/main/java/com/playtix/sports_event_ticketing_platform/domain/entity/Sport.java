@@ -6,16 +6,6 @@ import java.util.UUID;
 
 import com.playtix.sports_event_ticketing_platform.domain.entity.tournament.Tournament;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,8 +14,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name = "sports")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -34,28 +22,20 @@ import lombok.Setter;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Sport {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
     @Builder.Default
     private UUID id = UUID.randomUUID();
 
     @NotNull(message = "Sport type is required")
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true)
     private SportType name;
 
-    @Column(length = 500)
     private String description;
 
-    @Column(name = "number_of_players")
     private int numberOfPlayers;
 
-    @OneToMany(mappedBy = "sport", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<League> leagues = new ArrayList<>();
 
-    @OneToMany(mappedBy = "sport", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Tournament> tournaments = new ArrayList<>();
 
@@ -111,5 +91,4 @@ public class Sport {
                 ", tournamentsCount=" + getTournamentsCount() +
                 '}';
     }
-    
 }

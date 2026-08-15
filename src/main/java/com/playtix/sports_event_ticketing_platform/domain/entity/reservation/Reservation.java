@@ -11,19 +11,6 @@ import com.playtix.sports_event_ticketing_platform.domain.entity.payment.Payment
 import com.playtix.sports_event_ticketing_platform.domain.entity.ticket.Ticket;
 import com.playtix.sports_event_ticketing_platform.domain.entity.ticket.TicketCategory;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -33,8 +20,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name = "reservations")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -43,45 +28,31 @@ import lombok.Setter;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Reservation {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
     @Builder.Default
     private UUID id = UUID.randomUUID();
 
     @NotNull(message = "Status is required")
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     @Builder.Default
     private ReservationStatus status = ReservationStatus.PENDING;
 
-    @Column(name = "reservation_date", nullable = false, updatable = false)
     private LocalDateTime reservationDate;
 
-    @Column(nullable = false)
     private LocalDateTime expiry;
 
     @Positive(message = "Quantity must be positive")
-    @Column(nullable = false)
     @Builder.Default
     private int quantity = 1;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id", unique = true)
     private Payment payment;
 
     @NotNull(message = "Ticket is required")
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_id", nullable = false, unique = true)
     private Ticket ticket;
 
     @NotNull(message = "User is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
-    @PrePersist
-    protected void onCreate() {
+    public void initializeDefaults() {
         this.reservationDate = LocalDateTime.now();
         if (this.expiry == null) {
             this.expiry = this.reservationDate.plusMinutes(30);
@@ -94,7 +65,6 @@ public class Reservation {
         }
     }
 
-    
     public void associatePayment(Payment payment) {
         this.payment = payment;
         if (payment != null) {
@@ -141,17 +111,20 @@ public class Reservation {
             throw new IllegalStateException("Confirmed reservations cannot be cancelled from this section!");
         }
         this.status = ReservationStatus.CANCELLED;
-        this.ticket.setReservation(null);
+        if (this.ticket != null) {
+            this.ticket.setReservation(null);
+        }
     }
 
     public void expire() {
         if (this.status != ReservationStatus.PENDING) {
             throw new IllegalStateException("Only pending reservations can expire");
         }
-        this.ticket.setReservation(null);
+        if (this.ticket != null) {
+            this.ticket.setReservation(null);
+        }
     }
 
-    
     public boolean isPending() {
         return this.status == ReservationStatus.PENDING;
     }
@@ -177,7 +150,7 @@ public class Reservation {
     }
 
     public void checkAndExpire() {
-        if (isExpiredNow()) {
+        if (isExpiredNow() && this.ticket != null) {
             this.ticket.setReservation(null);
         }
     }
