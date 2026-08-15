@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
 
@@ -14,8 +15,8 @@
             rel="stylesheet"
             href="css/style.css"
     >
-
 </head>
+
 <body>
 
 <!-- ================= HEADER ================= -->
@@ -30,7 +31,6 @@
         >
             PlayTix
         </a>
-
 
         <nav class="main-nav">
 
@@ -76,7 +76,6 @@
 </header>
 
 
-
 <!-- ================= MAIN ================= -->
 
 <main class="page-container user-profile-page">
@@ -91,11 +90,10 @@
         </h3>
 
         <h1 id="walletBalance">
-            0 Toman
+            -
         </h1>
 
     </section>
-
 
 
     <!-- ================= PROFILE ================= -->
@@ -105,24 +103,25 @@
         <div class="profile-image">
 
             <img
+                    id="profileImage"
                     src="assets/images/default-profile.jpg"
                     alt="Profile Picture"
             >
 
         </div>
 
-
         <h2 id="fullName">
-            Ali Hasanli
+            Loading...
         </h2>
 
-
-        <p class="profile-role">
+        <p
+                class="profile-role"
+                id="profileRole"
+        >
             USER
         </p>
 
     </section>
-
 
 
     <!-- ================= USER INFORMATION ================= -->
@@ -146,6 +145,14 @@
         </div>
 
 
+        <!-- ERROR MESSAGE -->
+
+        <div
+                id="errorMessage"
+                class="profile-save-message"
+                style="display: none;"
+        ></div>
+
 
         <form id="userProfileForm">
 
@@ -159,15 +166,13 @@
                 </label>
 
                 <input
-                        type="number"
+                        type="text"
                         id="userId"
                         name="user_id"
-                        value="1"
                         readonly
                 >
 
             </div>
-
 
 
             <!-- ================= FIRST NAME ================= -->
@@ -182,12 +187,12 @@
                         type="text"
                         id="firstName"
                         name="first_name"
-                        value="Ali"
                         required
+                        minlength="2"
+                        maxlength="50"
                 >
 
             </div>
-
 
 
             <!-- ================= LAST NAME ================= -->
@@ -202,12 +207,12 @@
                         type="text"
                         id="lastName"
                         name="last_name"
-                        value="Hasanli"
                         required
+                        minlength="2"
+                        maxlength="50"
                 >
 
             </div>
-
 
 
             <!-- ================= EMAIL ================= -->
@@ -222,12 +227,10 @@
                         type="email"
                         id="email"
                         name="email"
-                        value="ali@example.com"
-                        required
+                        readonly
                 >
 
             </div>
-
 
 
             <!-- ================= PHONE ================= -->
@@ -242,45 +245,30 @@
                         type="text"
                         id="phoneNumber"
                         name="phone_number"
-                        value="+98 912 345 6789"
-                        required
+                        placeholder="09123456789"
+                        pattern="09[0-9]{9}"
                 >
 
             </div>
 
 
-
-            <!-- ================= PASSWORD ================= -->
+            <!-- ================= CITY ================= -->
 
             <div class="profile-form-row">
 
-                <label for="password">
-                    Password
+                <label for="city">
+                    City
                 </label>
 
-                <div class="password-wrapper">
-
-                    <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value="password123"
-                            required
-                    >
-
-                    <button
-                            type="button"
-                            id="togglePassword"
-                            class="password-toggle"
-                            aria-label="Show password"
-                    >
-                        👁️
-                    </button>
-
-                </div>
+                <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        minlength="2"
+                        maxlength="20"
+                >
 
             </div>
-
 
 
             <!-- ================= REGISTRATION DATE ================= -->
@@ -292,15 +280,13 @@
                 </label>
 
                 <input
-                        type="date"
+                        type="text"
                         id="registrationDate"
                         name="registration_date"
-                        value="2026-01-01"
                         readonly
                 >
 
             </div>
-
 
 
             <!-- ================= ACCOUNT STATUS ================= -->
@@ -322,7 +308,6 @@
             </div>
 
 
-
             <!-- ================= ROLE ================= -->
 
             <div class="profile-form-row">
@@ -342,18 +327,17 @@
             </div>
 
 
-
             <!-- ================= ACTIONS ================= -->
 
             <div class="profile-actions">
 
                 <button
                         type="submit"
+                        id="saveChangesBtn"
                         class="primary-btn"
                 >
                     Save Changes
                 </button>
-
 
                 <button
                         type="button"
@@ -365,9 +349,7 @@
 
             </div>
 
-
         </form>
-
 
 
         <!-- ================= SAVE MESSAGE ================= -->
@@ -381,7 +363,6 @@
         </div>
 
     </section>
-
 
 
     <!-- ================= MENU ================= -->
@@ -409,7 +390,6 @@
         </a>
 
 
-
         <a
                 href="reports.html"
                 class="menu-card"
@@ -433,7 +413,6 @@
     </section>
 
 
-
     <!-- ================= LOGOUT ================= -->
 
     <section class="logout-section">
@@ -451,7 +430,6 @@
 </main>
 
 
-
 <!-- ================= FOOTER ================= -->
 
 <footer class="main-footer">
@@ -463,252 +441,10 @@
 </footer>
 
 
-
 <!-- ================= JAVASCRIPT ================= -->
 
-<script>
-
-
-    /* =====================================================
-       FORM ELEMENTS
-    ===================================================== */
-
-    const profileForm =
-        document.getElementById(
-            "userProfileForm"
-        );
-
-
-    const saveMessage =
-        document.getElementById(
-            "saveMessage"
-        );
-
-
-    const cancelEditBtn =
-        document.getElementById(
-            "cancelEditBtn"
-        );
-
-
-
-    /* =====================================================
-       EDITABLE INPUTS
-    ===================================================== */
-
-    const editableInputs =
-        profileForm.querySelectorAll(
-            "input:not([readonly])"
-        );
-
-
-
-    /* =====================================================
-       STORE ORIGINAL VALUES
-    ===================================================== */
-
-    const originalValues = {};
-
-
-    editableInputs.forEach(
-        function (input) {
-
-            originalValues[
-                input.name
-                ] = input.value;
-
-        }
-    );
-
-
-
-    /* =====================================================
-       UPDATE FULL NAME
-    ===================================================== */
-
-    const firstName =
-        document.getElementById(
-            "firstName"
-        );
-
-
-    const lastName =
-        document.getElementById(
-            "lastName"
-        );
-
-
-    const fullName =
-        document.getElementById(
-            "fullName"
-        );
-
-
-    function updateFullName() {
-
-        fullName.textContent =
-            firstName.value +
-            " " +
-            lastName.value;
-
-    }
-
-
-    firstName.addEventListener(
-        "input",
-        updateFullName
-    );
-
-
-    lastName.addEventListener(
-        "input",
-        updateFullName
-    );
-
-
-
-    /* =====================================================
-       SAVE CHANGES
-    ===================================================== */
-
-    profileForm.addEventListener(
-        "submit",
-        function (event) {
-
-            event.preventDefault();
-
-
-            /*
-             * Temporary frontend behavior.
-             *
-             * Later this will be replaced
-             * with a PUT/PATCH request
-             * to the Spring Boot backend.
-             */
-
-
-            editableInputs.forEach(
-                function (input) {
-
-                    originalValues[
-                        input.name
-                        ] = input.value;
-
-                }
-            );
-
-
-            updateFullName();
-
-
-            saveMessage.style.display =
-                "block";
-
-
-            setTimeout(
-                function () {
-
-                    saveMessage.style.display =
-                        "none";
-
-                },
-                3000
-            );
-
-        }
-    );
-
-
-
-    /* =====================================================
-       CANCEL CHANGES
-    ===================================================== */
-
-    cancelEditBtn.addEventListener(
-        "click",
-        function () {
-
-            editableInputs.forEach(
-                function (input) {
-
-                    input.value =
-                        originalValues[
-                            input.name
-                            ];
-
-                }
-            );
-
-
-            updateFullName();
-
-
-            saveMessage.style.display =
-                "none";
-
-        }
-    );
-
-
-
-    /* =====================================================
-       LOGOUT
-    ===================================================== */
-
-    document
-        .getElementById("logoutBtn")
-        .addEventListener(
-            "click",
-            function () {
-
-                window.location.href =
-                    "login.html";
-
-            }
-        );
-
-
-    const passwordInput =
-        document.getElementById("password");
-
-    const togglePassword =
-        document.getElementById("togglePassword");
-
-    togglePassword.addEventListener(
-        "click",
-        function () {
-
-            if (
-                passwordInput.type === "password"
-            ) {
-
-                passwordInput.type = "text";
-
-                togglePassword.textContent = "👁️";
-
-                togglePassword.setAttribute(
-                    "aria-label",
-                    "Hide password"
-                );
-
-            } else {
-
-                passwordInput.type = "password";
-
-                togglePassword.textContent = "👁️";
-
-                togglePassword.setAttribute(
-                    "aria-label",
-                    "Show password"
-                );
-
-            }
-
-        }
-
-    );
-
-</script>
+<script src="js/profile.js"></script>
 
 </body>
+
 </html>
