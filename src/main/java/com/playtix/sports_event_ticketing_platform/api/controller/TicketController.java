@@ -3,6 +3,8 @@ package com.playtix.sports_event_ticketing_platform.api.controller;
 import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.CreateTicketRequest;
 import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.TicketDetailsDto;
 import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.TicketSummaryDto;
+import com.playtix.sports_event_ticketing_platform.elastic.ElasticTicketSearchService;
+import com.playtix.sports_event_ticketing_platform.elastic.TicketIndex;
 import com.playtix.sports_event_ticketing_platform.service.TicketSearchService;
 import com.playtix.sports_event_ticketing_platform.service.TicketService;
 import jakarta.validation.Valid;
@@ -21,6 +23,7 @@ public class TicketController {
 
     private final TicketService ticketService;
     private final TicketSearchService ticketSearchService;
+    private final ElasticTicketSearchService elasticTicketSearchService;
 
     @PostMapping
     public ResponseEntity<TicketSummaryDto> createTicket(@Valid @RequestBody CreateTicketRequest request) {
@@ -91,6 +94,22 @@ public class TicketController {
     ) {
         return ResponseEntity.ok(
                 ticketSearchService.searchTickets(matchId, categoryId, sport, city, team, priceRange)
+        );
+    }
+
+    /**
+     * Search directly against Elasticsearch index.
+     * Assignment requirement: only search API should use Elasticsearch.
+     */
+    @GetMapping("/elastic-search")
+    public ResponseEntity<List<TicketIndex>> elasticSearch(
+            @RequestParam(required = false) String sport,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String team,
+            @RequestParam(required = false) String status
+    ) {
+        return ResponseEntity.ok(
+                elasticTicketSearchService.search(sport, city, team, status)
         );
     }
 }
