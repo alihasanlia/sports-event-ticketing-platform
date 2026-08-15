@@ -57,6 +57,8 @@ public class ReportService {
         report.setStatus(ReportStatus.PENDING);
         report.setUser(user);
         report.setTicket(ticket);
+        Support support = supportRepository.findSupportWithFewestActiveReports().orElse(null);
+        report.assignToSupport(support);
 
         report = reportRepository.save(report);
         return reportMapper.toUserReportDto(report);
