@@ -3,6 +3,7 @@ package com.playtix.sports_event_ticketing_platform.service;
 import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.CreateTicketRequest;
 import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.TicketDetailsDto;
 import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.TicketSummaryDto;
+import com.playtix.sports_event_ticketing_platform.elastic.ElasticTicketSyncService;
 import com.playtix.sports_event_ticketing_platform.domain.entity.ticket.Ticket;
 import com.playtix.sports_event_ticketing_platform.domain.entity.ticket.TicketCategory;
 import com.playtix.sports_event_ticketing_platform.domain.entity.ticket.TicketStatus;
@@ -29,6 +30,7 @@ public class TicketService {
     private final MatchRepository matchRepository;
     private final TicketMapper ticketMapper;
     private final RedisCacheService redisCacheService;
+    private final ElasticTicketSyncService elasticTicketSyncService;
 
     @Transactional
     public TicketSummaryDto createTicket(CreateTicketRequest request) {
@@ -51,6 +53,9 @@ public class TicketService {
 
         ticket = ticketRepository.save(ticket);
         category.addTicket(ticket);
+
+        // sync SQL ticket into Elasticsearch index
+        elasticTicketSyncService.indexTicket(ticket);
 
         // invalidate broad search cache after ticket creation
         redisCacheService.deleteByPattern("ticket-search:*");
