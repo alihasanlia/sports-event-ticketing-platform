@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -117,4 +118,31 @@ public class UserController {
         userService.deleteUser(userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    @GetMapping("/{userId}/balance")
+    public ResponseEntity<BigDecimal> getUserBalance(@PathVariable UUID userId) {
+        return ResponseEntity.ok(userService.getUserBalance(userId));
+    }
+
+    @PutMapping("/{userId}/balance")
+    public ResponseEntity<BigDecimal> updateUserBalance(
+            @PathVariable UUID userId,
+            @RequestParam BigDecimal amount) {
+        return ResponseEntity.ok(userService.updateUserBalance(userId, amount));
+    }
+
+    @PostMapping("/{userId}/balance/add")
+    public ResponseEntity<BigDecimal> addToUserBalance(
+            @PathVariable UUID userId,
+            @RequestParam BigDecimal amount) {
+        return ResponseEntity.ok(userService.addToUserBalance(userId, amount));
+    }
+
+    @PostMapping("/{userId}/balance/subtract")
+    public ResponseEntity<BigDecimal> subtractFromUserBalance(
+            @PathVariable UUID userId,
+            @RequestParam BigDecimal amount) {
+        return ResponseEntity.ok(userService.subtractFromUserBalance(userId, amount));
+    }
+
 }

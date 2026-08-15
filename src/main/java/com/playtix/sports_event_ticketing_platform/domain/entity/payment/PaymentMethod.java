@@ -4,6 +4,7 @@ public enum PaymentMethod {
 
     CRYPTOCURRENCY,
     WALLET,
-    BANK_CARD
+    BANK_CARD,
+    WALLET_AND_CARD
 
 }

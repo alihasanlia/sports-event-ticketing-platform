@@ -1,5 +1,6 @@
 package com.playtix.sports_event_ticketing_platform.domain.entity.members;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,24 @@ public class User extends BaseUser {
     private List<TicketCancellation> canceledTickets;
     private List<Payment> payments;
     private List<Reservation> reservedTickets;
+    private BigDecimal balance;
+
+    public void addBalance(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        this.balance = this.balance.add(amount);
+    }
+    
+    public void deductBalance(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        if (this.balance.compareTo(amount) < 0) {
+            throw new IllegalArgumentException("Insufficient balance");
+        }
+        this.balance = this.balance.subtract(amount);
+    }
 
     public void addReport(Report report) {
         reports.add(report);

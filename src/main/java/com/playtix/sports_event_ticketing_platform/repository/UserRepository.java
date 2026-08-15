@@ -43,6 +43,11 @@ public class UserRepository {
         if (roleStr != null) {
             user.setRole(Role.valueOf(roleStr));
         }
+        // افزودن فیلد balance
+        java.math.BigDecimal balance = rs.getBigDecimal("balance");
+        if (balance != null) {
+            user.setBalance(balance);
+        }
         return user;
     };
 
@@ -66,7 +71,10 @@ public class UserRepository {
             if (user.getRole() == null) {
                 user.setRole(Role.USER);
             }
-            String sql = "INSERT INTO users (id, firstname, lastname, email, phone_number, city, password_hash, registration_date, status, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            if (user.getBalance() == null) {
+                user.setBalance(java.math.BigDecimal.ZERO);
+            }
+            String sql = "INSERT INTO users (id, firstname, lastname, email, phone_number, city, password_hash, registration_date, status, role, balance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             jdbcTemplate.update(sql,
                     user.getId(),
                     user.getFirstname(),
@@ -77,10 +85,11 @@ public class UserRepository {
                     user.getPasswordHash(),
                     user.getRegistrationDate() != null ? Timestamp.valueOf(user.getRegistrationDate()) : null,
                     user.getStatus() != null ? user.getStatus().name() : null,
-                    user.getRole() != null ? user.getRole().name() : null
+                    user.getRole() != null ? user.getRole().name() : null,
+                    user.getBalance() != null ? user.getBalance() : java.math.BigDecimal.ZERO
             );
         } else {
-            String sql = "UPDATE users SET firstname = ?, lastname = ?, email = ?, phone_number = ?, city = ?, password_hash = ?, registration_date = ?, status = ?, role = ? WHERE id = ?";
+            String sql = "UPDATE users SET firstname = ?, lastname = ?, email = ?, phone_number = ?, city = ?, password_hash = ?, registration_date = ?, status = ?, role = ?, balance = ? WHERE id = ?";
             jdbcTemplate.update(sql,
                     user.getFirstname(),
                     user.getLastname(),
@@ -91,6 +100,7 @@ public class UserRepository {
                     user.getRegistrationDate() != null ? Timestamp.valueOf(user.getRegistrationDate()) : null,
                     user.getStatus() != null ? user.getStatus().name() : null,
                     user.getRole() != null ? user.getRole().name() : null,
+                    user.getBalance() != null ? user.getBalance() : java.math.BigDecimal.ZERO,
                     user.getId()
             );
         }
@@ -212,5 +222,30 @@ public class UserRepository {
     public List<User> findActiveUsers() {
         String sql = "SELECT * FROM users WHERE status = 'ACTIVE'";
         return jdbcTemplate.query(sql, userRowMapper);
+    }
+
+    public int updateBalance(UUID userId, java.math.BigDecimal newBalance) {
+        String sql = "UPDATE users SET balance = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, newBalance, userId);
+    }
+
+    public int addToBalance(UUID userId, java.math.BigDecimal amount) {
+        String sql = "UPDATE users SET balance = balance + ? WHERE id = ?";
+        return jdbcTemplate.update(sql, amount, userId);
+    }
+
+    public int subtractFromBalance(UUID userId, java.math.BigDecimal amount) {
+        String sql = "UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?";
+        return jdbcTemplate.update(sql, amount, userId, amount);
+    }
+
+    public List<User> findByBalanceGreaterThan(java.math.BigDecimal amount) {
+        String sql = "SELECT * FROM users WHERE balance > ?";
+        return jdbcTemplate.query(sql, userRowMapper, amount);
+    }
+
+    public List<User> findByBalanceLessThan(java.math.BigDecimal amount) {
+        String sql = "SELECT * FROM users WHERE balance < ?";
+        return jdbcTemplate.query(sql, userRowMapper, amount);
     }
 }

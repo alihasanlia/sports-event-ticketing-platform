@@ -50,7 +50,6 @@ public class TicketCancellation {
     @NotNull(message = "Ticket is required")
     private Ticket ticket;
     
-    // متد جایگزین @PrePersist برای مقداردهی اولیه
     public void initializeDefaults() {
         if (this.requestDate == null) {
             this.requestDate = LocalDateTime.now();

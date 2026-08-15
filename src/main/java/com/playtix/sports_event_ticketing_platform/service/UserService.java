@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -163,5 +164,91 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
         
         userRepository.delete(user);
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal getUserBalance(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        return user.getBalance() != null ? user.getBalance() : BigDecimal.ZERO;
+    }
+
+    @Transactional
+    public BigDecimal updateUserBalance(UUID userId, BigDecimal newBalance) {
+        if (newBalance == null || newBalance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Balance cannot be null or negative");
+        }
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        
+        user.setBalance(newBalance);
+        userRepository.save(user);
+        return user.getBalance();
+    }
+
+    @Transactional
+    public BigDecimal addToUserBalance(UUID userId, BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Amount must be positive");
+        }
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        
+        BigDecimal currentBalance = user.getBalance() != null ? user.getBalance() : BigDecimal.ZERO;
+        user.setBalance(currentBalance.add(amount));
+        userRepository.save(user);
+        return user.getBalance();
+    }
+
+    @Transactional
+    public BigDecimal subtractFromUserBalance(UUID userId, BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Amount must be positive");
+        }
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        
+        BigDecimal currentBalance = user.getBalance() != null ? user.getBalance() : BigDecimal.ZERO;
+        if (currentBalance.compareTo(amount) < 0) {
+            throw new RuntimeException("Insufficient balance! Current balance: " + currentBalance + ", Required: " + amount);
+        }
+        
+        user.setBalance(currentBalance.subtract(amount));
+        userRepository.save(user);
+        return user.getBalance();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserReferenceDto> getUsersWithBalanceGreaterThan(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Amount cannot be null or negative");
+        }
+        List<User> users = userRepository.findByBalanceGreaterThan(amount);
+        return userMapper.toReferenceDtoList(users);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserReferenceDto> getUsersWithBalanceLessThan(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Amount cannot be null or negative");
+        }
+        List<User> users = userRepository.findByBalanceLessThan(amount);
+        return userMapper.toReferenceDtoList(users);
+    }
+
+    @Transactional(readOnly = true)
+    public UserProfileDto getUserProfileWithBalance(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        return userMapper.toProfileDto(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserReferenceDto> getUsersWithZeroBalance() {
+        List<User> users = userRepository.findByBalanceLessThan(BigDecimal.ONE);
+        return userMapper.toReferenceDtoList(users);
     }
 }

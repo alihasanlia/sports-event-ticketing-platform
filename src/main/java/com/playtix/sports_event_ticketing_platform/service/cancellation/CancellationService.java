@@ -66,6 +66,9 @@ public class CancellationService {
                 .reason(request.reason())
                 .build();
 
+        user.addBalance(refundAmount);
+        userRepository.save(user);
+        
         cancellation = cancellationRepository.save(cancellation);
 
         ticket.setStatus(TicketStatus.NOT_RESERVED);

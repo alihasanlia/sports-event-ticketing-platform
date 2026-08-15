@@ -79,6 +79,25 @@ public class PaymentService {
         }
 
         try {
+            User user = payment.getUser();
+            if (user == null) {
+                throw new RuntimeException("User not found for this payment");
+            }
+
+            BigDecimal walletPayment = request.walletAmount() != null ? request.walletAmount() : BigDecimal.ZERO;
+            BigDecimal remainingAmount = request.remainingAmount() != null ? request.remainingAmount() : BigDecimal.ZERO;
+
+            BigDecimal currentBalance = user.getBalance() != null ? user.getBalance() : BigDecimal.ZERO;
+            
+            if (walletPayment.compareTo(BigDecimal.ZERO) > 0) {
+                if (currentBalance.compareTo(walletPayment) < 0) {
+                    throw new RuntimeException("Insufficient wallet balance");
+                }
+                user.setBalance(currentBalance.subtract(walletPayment));
+                userRepository.save(user);
+            }
+
+            payment.setAmount(walletPayment.add(remainingAmount));
             payment.setBankReceiptNumber(request.bankReceiptNumber());
             payment.markAsCompleted();
             payment = paymentRepository.save(payment);
@@ -96,21 +115,6 @@ public class PaymentService {
             payment = paymentRepository.save(payment);
             throw new RuntimeException("Payment processing failed: " + e.getMessage());
         }
-    }
-
-    @Transactional
-    public UserPaymentDto refundPayment(UUID paymentId) {
-        Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new RuntimeException("Payment not found"));
-
-        if (payment.getStatus() != PaymentStatus.SUCCESSFUL) {
-            throw new RuntimeException("Only successful payments can be refunded");
-        }
-
-        payment.markAsRefunded();
-        payment = paymentRepository.save(payment);
-
-        return paymentMapper.toUserPaymentDto(payment);
     }
 
     @Transactional(readOnly = true)

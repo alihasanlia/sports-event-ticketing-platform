@@ -1,5 +1,6 @@
 package com.playtix.sports_event_ticketing_platform.domain.dto.user;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -11,5 +12,6 @@ public record UserProfileDto(
     String phoneNumber,
     String city,
     String profileImageUrl,
-    LocalDateTime registrationDate
+    LocalDateTime registrationDate,
+    BigDecimal balance
 ) {}
