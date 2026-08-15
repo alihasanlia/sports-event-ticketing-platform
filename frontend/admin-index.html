@@ -76,7 +76,7 @@
                 ADMIN DASHBOARD
             </span>
 
-            <h1>
+            <h1 id="welcomeMessage">
                 Welcome Back, Admin
             </h1>
 
@@ -293,32 +293,7 @@
 
 <!-- ================= JAVASCRIPT ================= -->
 
-<script>
-
-    /*
-     * Temporary values.
-     *
-     * Later these values can be loaded
-     * from the Spring Boot API.
-     */
-
-    const ticketCount =
-        document.getElementById(
-            "ticketCount"
-        );
-
-    const reportCount =
-        document.getElementById(
-            "reportCount"
-        );
-
-
-    ticketCount.textContent = "0";
-
-    reportCount.textContent = "0";
-
-
-</script>
+<script src="js/admin-index.js"></script>
 
 </body>
 
