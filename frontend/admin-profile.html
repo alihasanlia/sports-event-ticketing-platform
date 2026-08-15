@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -16,9 +18,13 @@
     >
 
 </head>
+
 <body>
 
-<!-- ================= HEADER ================= -->
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
 
 <header class="main-header">
 
@@ -56,18 +62,23 @@
 
 
 
-<!-- ================= MAIN ================= -->
+<!-- =====================================================
+     MAIN
+===================================================== -->
 
 <main class="page-container admin-profile-page">
 
 
-    <!-- ================= PROFILE ================= -->
+    <!-- =================================================
+         PROFILE CARD
+    ================================================== -->
 
     <section class="profile-card">
 
         <div class="profile-image">
 
             <img
+                    id="profileImage"
                     src="assets/images/default-profile.jpg"
                     alt="Profile Picture"
             >
@@ -76,7 +87,7 @@
 
 
         <h2 id="fullName">
-            Mohammad Ahmadi
+            Loading...
         </h2>
 
 
@@ -88,9 +99,12 @@
 
 
 
-    <!-- ================= ADMIN INFORMATION ================= -->
+    <!-- =================================================
+         ADMIN INFORMATION
+    ================================================== -->
 
     <section class="info-card admin-info-card">
+
 
         <div class="section-title">
 
@@ -110,6 +124,22 @@
 
 
 
+        <!-- =================================================
+             ERROR MESSAGE
+        ================================================== -->
+
+        <div
+                id="errorMessage"
+                class="profile-save-message"
+                style="display: none;"
+        ></div>
+
+
+
+        <!-- =================================================
+             PROFILE FORM
+        ================================================== -->
+
         <form id="adminProfileForm">
 
 
@@ -122,10 +152,9 @@
                 </label>
 
                 <input
-                        type="number"
+                        type="text"
                         id="userId"
                         name="user_id"
-                        value="1"
                         readonly
                 >
 
@@ -145,8 +174,9 @@
                         type="text"
                         id="firstName"
                         name="first_name"
-                        value="Mohammad"
                         required
+                        minlength="2"
+                        maxlength="50"
                 >
 
             </div>
@@ -165,8 +195,9 @@
                         type="text"
                         id="lastName"
                         name="last_name"
-                        value="Ahmadi"
                         required
+                        minlength="2"
+                        maxlength="50"
                 >
 
             </div>
@@ -185,8 +216,7 @@
                         type="email"
                         id="email"
                         name="email"
-                        value="admin@example.com"
-                        required
+                        readonly
                 >
 
             </div>
@@ -205,42 +235,28 @@
                         type="text"
                         id="phoneNumber"
                         name="phone_number"
-                        value="+98 912 123 4567"
-                        required
+                        placeholder="09123456789"
                 >
 
             </div>
 
 
 
-            <!-- ================= PASSWORD ================= -->
+            <!-- ================= CITY ================= -->
 
             <div class="profile-form-row">
 
-                <label for="password">
-                    Password
+                <label for="city">
+                    City
                 </label>
 
-                <div class="password-wrapper">
-
-                    <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value="password123"
-                            required
-                    >
-
-                    <button
-                            type="button"
-                            id="togglePassword"
-                            class="password-toggle"
-                            aria-label="Show password"
-                    >
-                        👁️
-                    </button>
-
-                </div>
+                <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        minlength="2"
+                        maxlength="20"
+                >
 
             </div>
 
@@ -255,30 +271,9 @@
                 </label>
 
                 <input
-                        type="date"
+                        type="text"
                         id="registrationDate"
                         name="registration_date"
-                        value="2026-01-01"
-                        readonly
-                >
-
-            </div>
-
-
-
-            <!-- ================= ACCOUNT STATUS ================= -->
-
-            <div class="profile-form-row">
-
-                <label for="accountStatus">
-                    Account Status
-                </label>
-
-                <input
-                        type="text"
-                        id="accountStatus"
-                        name="account_status"
-                        value="ACTIVE"
                         readonly
                 >
 
@@ -306,12 +301,15 @@
 
 
 
-            <!-- ================= ACTIONS ================= -->
+            <!-- =================================================
+                 ACTIONS
+            ================================================== -->
 
             <div class="profile-actions">
 
                 <button
                         type="submit"
+                        id="saveChangesBtn"
                         class="primary-btn"
                 >
                     Save Changes
@@ -333,7 +331,9 @@
 
 
 
-        <!-- ================= SUCCESS MESSAGE ================= -->
+        <!-- =================================================
+             SUCCESS MESSAGE
+        ================================================== -->
 
         <div
                 id="saveMessage"
@@ -348,7 +348,9 @@
 
 
 
-    <!-- ================= LOGOUT ================= -->
+    <!-- =================================================
+         LOGOUT
+    ================================================== -->
 
     <section class="logout-section">
 
@@ -366,7 +368,9 @@
 
 
 
-<!-- ================= FOOTER ================= -->
+<!-- =====================================================
+     FOOTER
+===================================================== -->
 
 <footer class="main-footer">
 
@@ -378,244 +382,12 @@
 
 
 
-<!-- ================= JAVASCRIPT ================= -->
-
-<script>
-
-
-    /* =====================================================
-       PROFILE FORM
-    ===================================================== */
-
-    const profileForm =
-        document.getElementById(
-            "adminProfileForm"
-        );
-
-
-    const saveMessage =
-        document.getElementById(
-            "saveMessage"
-        );
-
-
-    const cancelEditBtn =
-        document.getElementById(
-            "cancelEditBtn"
-        );
-
-
-
-    /* =====================================================
-       STORE ORIGINAL VALUES
-    ===================================================== */
-
-    const editableInputs =
-        profileForm.querySelectorAll(
-            "input:not([readonly])"
-        );
-
-
-    const originalValues = {};
-
-
-    editableInputs.forEach(
-        function (input) {
-
-            originalValues[
-                input.name
-                ] = input.value;
-
-        }
-    );
-
-
-
-    /* =====================================================
-       SAVE CHANGES
-    ===================================================== */
-
-    profileForm.addEventListener(
-        "submit",
-        function (event) {
-
-            event.preventDefault();
-
-
-            /*
-             * Temporary local behavior.
-             *
-             * Later this section will send
-             * the edited information to
-             * the Spring Boot API.
-             */
-
-
-            editableInputs.forEach(
-                function (input) {
-
-                    originalValues[
-                        input.name
-                        ] = input.value;
-
-                }
-            );
-
-
-            saveMessage.style.display =
-                "block";
-
-
-            setTimeout(
-                function () {
-
-                    saveMessage.style.display =
-                        "none";
-
-                },
-                3000
-            );
-
-        }
-    );
-
-
-
-    /* =====================================================
-       CANCEL EDIT
-    ===================================================== */
-
-    cancelEditBtn.addEventListener(
-        "click",
-        function () {
-
-            editableInputs.forEach(
-                function (input) {
-
-                    input.value =
-                        originalValues[
-                            input.name
-                            ];
-
-                }
-            );
-
-
-            saveMessage.style.display =
-                "none";
-
-        }
-    );
-
-
-
-    /* =====================================================
-       UPDATE FULL NAME
-    ===================================================== */
-
-    const firstName =
-        document.getElementById(
-            "firstName"
-        );
-
-
-    const lastName =
-        document.getElementById(
-            "lastName"
-        );
-
-
-    const fullName =
-        document.getElementById(
-            "fullName"
-        );
-
-
-    function updateFullName() {
-
-        fullName.textContent =
-            firstName.value +
-            " " +
-            lastName.value;
-
-    }
-
-
-    firstName.addEventListener(
-        "input",
-        updateFullName
-    );
-
-
-    lastName.addEventListener(
-        "input",
-        updateFullName
-    );
-
-
-
-    /* =====================================================
-       LOGOUT
-    ===================================================== */
-
-    document
-        .getElementById("logoutBtn")
-        .addEventListener(
-            "click",
-            function () {
-
-                /*
-                 * Later we can clear the
-                 * authentication/session data here.
-                 */
-
-                window.location.href =
-                    "login.html";
-
-            }
-        );
-
-    const passwordInput =
-        document.getElementById("password");
-
-    const togglePassword =
-        document.getElementById("togglePassword");
-
-    togglePassword.addEventListener(
-        "click",
-        function () {
-
-            if (
-                passwordInput.type === "password"
-            ) {
-
-                passwordInput.type = "text";
-
-                togglePassword.textContent = "👁️";
-
-                togglePassword.setAttribute(
-                    "aria-label",
-                    "Hide password"
-                );
-
-            } else {
-
-                passwordInput.type = "password";
-
-                togglePassword.textContent = "👁️";
-
-                togglePassword.setAttribute(
-                    "aria-label",
-                    "Show password"
-                );
-
-            }
-
-        }
-
-    );
-
-</script>
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+
+<script src="js/admin-profile.js"></script>
 
 </body>
+
 </html>
