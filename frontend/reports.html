@@ -104,13 +104,18 @@
                     Subject
                 </label>
 
-                <input
-                        type="text"
+                <select
                         id="reportSubject"
                         name="subject"
-                        placeholder="Enter report subject"
                         required
                 >
+                    <option value="">Select subject</option>
+                    <option value="PAYMENT">Payment Problem</option>
+                    <option value="TICKET_CANCELLATION">Ticket Cancellation</option>
+                    <option value="REFUND">Refund Issue</option>
+                    <option value="TICKET_DELIVERY">Ticket Delivery</option>
+                    <option value="OTHER">Other</option>
+                </select>
 
             </div>
 
@@ -134,24 +139,6 @@
             </div>
 
 
-            <!-- Automatically generated time -->
-
-            <div class="form-group">
-
-                <label for="reportTime">
-                    Date & Time
-                </label>
-
-                <input
-                        type="text"
-                        id="reportTime"
-                        name="createdAt"
-                        readonly
-                >
-
-            </div>
-
-
             <button
                     type="submit"
                     class="primary-btn submit-report-btn"
@@ -164,155 +151,36 @@
     </section>
 
 
+    <!-- ================= LOADING ================= -->
+
+    <div id="reportsLoading" style="text-align: center; padding: 2rem;">
+        Loading reports...
+    </div>
+
+
     <!-- ================= REPORT LIST ================= -->
 
-    <section class="reports-list">
+    <section id="reportsList" class="reports-list">
 
-
-        <!-- Report 1 -->
-
-        <article class="report-card">
-
-            <div class="report-card-header">
-
-                <div>
-
-                    <h2>
-                        Payment Problem
-                    </h2>
-
-                    <span class="report-date">
-                            August 4, 2026 - 14:32
-                        </span>
-
-                </div>
-
-                <span class="status-badge status-pending">
-                        PENDING
-                    </span>
-
-            </div>
-
-
-            <div class="report-content">
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Subject
-                        </span>
-
-                    <p>
-                        Payment Problem
-                    </p>
-
-                </div>
-
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Report
-                        </span>
-
-                    <p>
-                        I completed the payment but my ticket
-                        has not appeared in my reservations.
-                    </p>
-
-                </div>
-
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Admin Response
-                        </span>
-
-                    <p class="no-response">
-                        No response yet.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </article>
-
-
-        <!-- Report 2 -->
-
-        <article class="report-card">
-
-            <div class="report-card-header">
-
-                <div>
-
-                    <h2>
-                        Ticket Cancellation
-                    </h2>
-
-                    <span class="report-date">
-                            July 30, 2026 - 11:20
-                        </span>
-
-                </div>
-
-                <span class="status-badge status-resolved">
-                        RESOLVED
-                    </span>
-
-            </div>
-
-
-            <div class="report-content">
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Subject
-                        </span>
-
-                    <p>
-                        Ticket Cancellation
-                    </p>
-
-                </div>
-
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Report
-                        </span>
-
-                    <p>
-                        I cancelled my ticket but I have not
-                        received my refund yet.
-                    </p>
-
-                </div>
-
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Admin Response
-                        </span>
-
-                    <p>
-                        Your refund has been processed successfully.
-                        It should appear in your wallet shortly.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </article>
-
+        <!-- Reports are generated by JavaScript -->
 
     </section>
+
+
+    <!-- ================= NO REPORTS ================= -->
+
+    <div id="noReports" class="no-search-results" style="display: none;">
+
+        <h2>
+            No Reports
+        </h2>
+
+        <p>
+            You haven't submitted any reports yet.
+        </p>
+
+    </div>
+
 
 </main>
 
@@ -330,123 +198,7 @@
 
 <!-- ================= JAVASCRIPT ================= -->
 
-<script>
-
-    const addReportBtn =
-        document.getElementById("addReportBtn");
-
-    const newReportForm =
-        document.getElementById("newReportForm");
-
-    const closeReportForm =
-        document.getElementById("closeReportForm");
-
-    const reportTime =
-        document.getElementById("reportTime");
-
-    const reportForm =
-        document.getElementById("reportForm");
-
-
-    /*
-     * Open new report form
-     */
-
-    addReportBtn.addEventListener("click", function () {
-
-        newReportForm.style.display = "block";
-
-        setCurrentDateTime();
-
-        newReportForm.scrollIntoView({
-            behavior: "smooth"
-        });
-
-    });
-
-
-    /*
-     * Close new report form
-     */
-
-    closeReportForm.addEventListener("click", function () {
-
-        newReportForm.style.display = "none";
-
-    });
-
-
-    /*
-     * Automatically set current date & time
-     */
-
-    function setCurrentDateTime() {
-
-        const now = new Date();
-
-        const formattedDate =
-            now.toLocaleString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-            });
-
-        reportTime.value = formattedDate;
-
-    }
-
-
-    /*
-     * Submit report
-     */
-
-    reportForm.addEventListener("submit", function (event) {
-
-        event.preventDefault();
-
-        const subject =
-            document.getElementById("reportSubject").value;
-
-        const text =
-            document.getElementById("reportText").value;
-
-        const createdAt =
-            reportTime.value;
-
-
-        /*
-         * Backend connection will be added later.
-         *
-         * Example:
-         *
-         * POST /api/reports
-         *
-         * {
-         *     subject,
-         *     text,
-         *     createdAt
-         * }
-         */
-
-
-        console.log({
-            subject: subject,
-            text: text,
-            createdAt: createdAt
-        });
-
-
-        alert("Your report has been submitted successfully.");
-
-        reportForm.reset();
-
-        newReportForm.style.display = "none";
-
-    });
-
-</script>
+<script src="js/reports.js"></script>
 
 </body>
 
