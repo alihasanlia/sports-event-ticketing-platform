@@ -3,7 +3,7 @@ package com.playtix.sports_event_ticketing_platform.service.redis;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
+import java.util.Set;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -28,5 +28,12 @@ public class RedisCacheService {
     public boolean exists(String key) {
         Boolean exists = redisTemplate.hasKey(key);
         return Boolean.TRUE.equals(exists);
+    }
+
+    public void deleteByPattern(String pattern) {
+        Set<String> keys = redisTemplate.keys(pattern);
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+        }
     }
 }

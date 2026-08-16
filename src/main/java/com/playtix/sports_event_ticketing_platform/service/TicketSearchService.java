@@ -3,9 +3,9 @@ package com.playtix.sports_event_ticketing_platform.service;
 import com.playtix.sports_event_ticketing_platform.mapper.TicketMapper;
 import com.playtix.sports_event_ticketing_platform.service.redis.RedisCacheService;
 import com.playtix.sports_event_ticketing_platform.config.RedisCacheProperties;
+import com.playtix.sports_event_ticketing_platform.domain.dto.ticket.TicketSummaryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.StringJoiner;
@@ -23,17 +23,39 @@ public class TicketSearchService {
     /**
      * Search tickets with simple key composition and cache-aside pattern.
      */
-    public List<?> searchTickets(UUID matchId, UUID categoryId, String sport, String city, String team, String priceRange) {
-        String searchKey = buildSearchKey(matchId, categoryId, sport, city, team, priceRange);
+    public List<TicketSummaryDto> searchTickets(
+            UUID matchId,
+            UUID categoryId,
+            String sport,
+            String city,
+            String team,
+            String priceRange
+    ) {
+        String searchKey = buildSearchKey(
+                matchId, categoryId, sport, city, team, priceRange
+        );
+
         String cacheKey = "ticket-search:" + searchKey;
 
         return redisCacheService.get(cacheKey)
-                .map(obj -> (List<?>) obj)
+                .map(obj -> {
+                    @SuppressWarnings("unchecked")
+                    List<TicketSummaryDto> cached =
+                            (List<TicketSummaryDto>) obj;
+                    return cached;
+                })
                 .orElseGet(() -> {
-                    // currently delegate to TicketService; adapt as you add filtering
-                    List<?> results = ticketService.getTicketsByMatch(matchId);
+                    List<TicketSummaryDto> results =
+                            ticketService.getTicketsByMatch(matchId);
 
-                    redisCacheService.put(cacheKey, results, Duration.ofSeconds(redisCacheProperties.getSearchCacheTtl()));
+                    redisCacheService.put(
+                            cacheKey,
+                            results,
+                            Duration.ofSeconds(
+                                    redisCacheProperties.getSearchCacheTtl()
+                            )
+                    );
+
                     return results;
                 });
     }

@@ -90,7 +90,7 @@ public class TicketController {
      * Cached ticket search endpoint backed by Redis.
      */
     @GetMapping("/search")
-    public ResponseEntity<List<?>> searchTickets(
+    public ResponseEntity<List<TicketSummaryDto>> searchTickets(
             @RequestParam(required = false) UUID matchId,
             @RequestParam(required = false) UUID categoryId,
             @RequestParam(required = false) String sport,

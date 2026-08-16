@@ -14,6 +14,7 @@ import com.playtix.sports_event_ticketing_platform.repository.ReservationReposit
 import com.playtix.sports_event_ticketing_platform.repository.TicketRepository;
 import com.playtix.sports_event_ticketing_platform.repository.UserRepository;
 import com.playtix.sports_event_ticketing_platform.service.redis.ReservationLockService;
+import com.playtix.sports_event_ticketing_platform.elastic.ElasticTicketSyncService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,8 @@ public class ReservationService {
     private final UserRepository userRepository;
     private final ReservationMapper reservationMapper;
     private final ReservationLockService reservationLockService;
+    private final ElasticTicketSyncService elasticTicketSyncService;
+
 
     @Transactional
     public UserReservationDto createReservation(CreateReservationRequest request) {
@@ -85,6 +88,17 @@ public class ReservationService {
         }
 
         reservation.cancel();
+
+        Ticket ticket = reservation.getTicket();
+
+        if (ticket != null && ticket.getStatus() == TicketStatus.RESERVED) {
+            ticket.cancelReservation();
+
+            ticketRepository.save(ticket);
+
+            elasticTicketSyncService.indexTicket(ticket);
+        }
+
         reservationRepository.save(reservation);
         // Release Redis reservation lock on cancellation
         reservationLockService.releaseLock(reservation.getTicket().getId(), userId);

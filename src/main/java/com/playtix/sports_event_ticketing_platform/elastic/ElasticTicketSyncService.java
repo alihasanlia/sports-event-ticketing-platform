@@ -3,14 +3,15 @@ package com.playtix.sports_event_ticketing_platform.elastic;
 import com.playtix.sports_event_ticketing_platform.domain.entity.ticket.Ticket;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.IndexCoordinates;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import com.playtix.sports_event_ticketing_platform.domain.entity.match.Match;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ElasticTicketSyncService {
 
-    private final ElasticsearchOperations operations;
+    private final ElasticsearchOperations elasticOperations;
 
     /**
      * Sync SQL ticket data into Elasticsearch index.
@@ -21,26 +22,35 @@ public class ElasticTicketSyncService {
 
         index.setId(ticket.getId().toString());
         index.setSeatNumber(ticket.getSeatNumber());
-        index.setRowNumber(ticket.getRowNumber());
-        index.setSectionNumber(ticket.getSectionNumber());
+        index.setPrice(ticket.getFinalPrice().doubleValue());
         index.setStatus(ticket.getStatus().name());
 
-        if (ticket.getPrice() != null) {
-            index.setPrice(ticket.getPrice().doubleValue());
-        }
-
         if (ticket.getMatch() != null) {
-            index.setMatchId(ticket.getMatch().getId().toString());
+            Match match = ticket.getMatch();
+
+            index.setMatchId(match.getId().toString());
+
+            if (match.getSportType() != null) {
+                index.setSport(match.getSportType().name());
+            }
+
+            if (match.getHomeTeam() != null) {
+                index.setTeamA(match.getHomeTeam().getName());
+            }
+
+            if (match.getAwayTeam() != null) {
+                index.setTeamB(match.getAwayTeam().getName());
+            }
+
+            if (match.getStadium() != null) {
+                index.setCity(match.getStadium().getCity());
+            }
         }
 
-        if (ticket.getTicketCategory() != null) {
-            index.setTicketCategoryId(ticket.getTicketCategory().getId().toString());
-        }
-
-        operations.save(index, IndexCoordinates.of("tickets"));
+        elasticOperations.save(index);
     }
 
     public void removeTicket(String ticketId) {
-        operations.delete(ticketId, IndexCoordinates.of("tickets"));
+        elasticOperations.delete(ticketId, IndexCoordinates.of("tickets"));
     }
 }
