@@ -3,55 +3,258 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>PlayTix | Results</title>
+
   <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    /* ================================
+       SEAT SELECTION
+    ================================= */
+
+    .seat-selection {
+      margin-top: 24px;
+      padding: 20px;
+      border-radius: 12px;
+      background: var(--card-bg, #ffffff);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .seat-selection-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .seat-selection-title {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .seat-selection-subtitle {
+      margin: 5px 0 0;
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+
+    .seat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .seat-button {
+      min-height: 48px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 8px;
+      background: #f4f4f4;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s ease;
+      padding: 7px 5px;
+    }
+
+    .seat-button:hover {
+      transform: translateY(-1px);
+      border-color: currentColor;
+    }
+
+    .seat-button.selected {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
+
+    .seat-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      transform: none;
+    }
+
+    .seat-number {
+      display: block;
+      font-size: 0.95rem;
+    }
+
+    .seat-details {
+      display: block;
+      margin-top: 3px;
+      font-size: 0.7rem;
+      opacity: 0.7;
+      font-weight: normal;
+    }
+
+    .selected-seat-info {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.04);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .selected-seat-label {
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
+
+    .selected-seat-value {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .seat-price {
+      font-weight: 700;
+    }
+
+    .seat-message {
+      margin-top: 14px;
+      font-size: 0.9rem;
+    }
+
+    .seat-message.error {
+      color: #b42318;
+    }
+
+    .seat-message.success {
+      color: #087443;
+    }
+
+    .loading-seats {
+      text-align: center;
+      padding: 20px;
+      opacity: 0.7;
+    }
+
+    .no-seats {
+      padding: 18px;
+      text-align: center;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.04);
+      opacity: 0.75;
+    }
+
+    .match-card-actions {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .reserve-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 600px) {
+      .seat-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
 </head>
+
 <body>
 
 <!-- ================= HEADER ================= -->
+
 <header class="main-header">
   <div class="header-content">
-    <a href="index.html" class="logo">PlayTix</a>
+
+    <a href="index.html" class="logo">
+      PlayTix
+    </a>
+
     <nav class="main-nav">
       <a href="index.html" class="nav-link">Home</a>
       <a href="profile.html" class="nav-link">Profile</a>
       <a href="tickets.html" class="nav-link">Tickets</a>
       <a href="reports.html" class="nav-link">Reports</a>
     </nav>
+
   </div>
 </header>
 
+
 <!-- ================= MAIN ================= -->
+
 <main class="page-container">
 
   <!-- ================= SEARCH HEADER ================= -->
+
   <div class="page-header">
+
     <div>
+
       <h1>Results</h1>
-      <p id="searchDescription">Loading...</p>
+
+      <p id="searchDescription">
+        Loading...
+      </p>
+
     </div>
+
   </div>
 
+
   <!-- ================= RESULTS ================= -->
-  <section id="searchResults" class="ticket-list">
-    <!-- Results are generated dynamically -->
+
+  <section
+    id="searchResults"
+    class="ticket-list"
+  >
+    <!-- Match cards are generated dynamically -->
   </section>
 
-  <!-- NO RESULTS -->
-  <div id="noResults" class="no-search-results" style="display: none;">
+
+  <!-- ================= NO RESULTS ================= -->
+
+  <div
+    id="noResults"
+    class="no-search-results"
+    style="display: none;"
+  >
+
     <h2>No matches found</h2>
-    <p>We couldn't find any matches for your search.</p>
-    <a href="index.html" class="primary-btn">Back to Home</a>
+
+    <p>
+      We couldn't find any matches for your search.
+    </p>
+
+    <a
+      href="index.html"
+      class="primary-btn"
+    >
+      Back to Home
+    </a>
+
   </div>
 
 </main>
 
+
 <!-- ================= FOOTER ================= -->
+
 <footer class="main-footer">
-  <p>© 2026 PlayTix. All Rights Reserved.</p>
+
+  <p>
+    © 2026 PlayTix. All Rights Reserved.
+  </p>
+
 </footer>
 
+
 <!-- ================= JAVASCRIPT ================= -->
+
 <script src="js/results.js"></script>
 
 </body>
