@@ -118,7 +118,7 @@
                 </span>
 
                 <strong id="matchName">
-                    -
+                    Loading...
                 </strong>
 
             </div>
@@ -131,7 +131,7 @@
                 </span>
 
                 <strong id="stadiumName">
-                    -
+                    Loading...
                 </strong>
 
             </div>
@@ -144,7 +144,7 @@
                 </span>
 
                 <strong id="ticketCategory">
-                    -
+                    Loading...
                 </strong>
 
             </div>
@@ -157,7 +157,7 @@
                 </span>
 
                 <strong id="paymentAmount">
-                    -
+                    Loading...
                 </strong>
 
             </div>
@@ -258,10 +258,13 @@
                 </div>
 
 
+                <div id="paymentError" style="display: none; color: #e74c3c; margin-bottom: 1rem;"></div>
+
 
                 <button
                         type="submit"
                         class="primary-btn payment-submit-btn"
+                        id="payButton"
                 >
                     Pay Now
                 </button>
@@ -327,196 +330,7 @@
 
 <!-- ================= JAVASCRIPT ================= -->
 
-<script>
-
-
-    /* =====================================================
-       GET RESERVATION INDEX
-    ===================================================== */
-
-    const urlParams =
-        new URLSearchParams(
-            window.location.search
-        );
-
-
-    const reservationIndex =
-        Number(
-            urlParams.get(
-                "reservation"
-            )
-        );
-
-
-
-    /* =====================================================
-       LOAD RESERVATIONS
-    ===================================================== */
-
-    let reservations =
-        JSON.parse(
-            localStorage.getItem(
-                "reservations"
-            )
-        ) || [];
-
-
-
-    const reservation =
-        reservations[
-            reservationIndex
-            ];
-
-
-
-    /* =====================================================
-       ELEMENTS
-    ===================================================== */
-
-    const matchName =
-        document.getElementById(
-            "matchName"
-        );
-
-
-    const stadiumName =
-        document.getElementById(
-            "stadiumName"
-        );
-
-
-    const ticketCategory =
-        document.getElementById(
-            "ticketCategory"
-        );
-
-
-    const paymentAmount =
-        document.getElementById(
-            "paymentAmount"
-        );
-
-
-    const paymentForm =
-        document.getElementById(
-            "paymentForm"
-        );
-
-
-    const paymentSuccess =
-        document.getElementById(
-            "paymentSuccess"
-        );
-
-
-
-    /* =====================================================
-       CHECK RESERVATION
-    ===================================================== */
-
-    if (
-        !reservation ||
-        reservation.paid
-    ) {
-
-        paymentForm.style.display =
-            "none";
-
-
-        if (reservation) {
-
-            paymentSuccess.style.display =
-                "block";
-
-        }
-
-    } else {
-
-
-        /* Display Reservation */
-
-        matchName.textContent =
-            reservation.match;
-
-
-        stadiumName.textContent =
-            reservation.stadium;
-
-
-        ticketCategory.textContent =
-            reservation.ticketCategory;
-
-
-        paymentAmount.textContent =
-            Number(
-                reservation.price
-            ).toLocaleString() +
-            " Toman";
-
-    }
-
-
-
-    /* =====================================================
-       PAYMENT
-    ===================================================== */
-
-    paymentForm.addEventListener(
-        "submit",
-        function (event) {
-
-            event.preventDefault();
-
-
-
-            /*
-             * This is ONLY a local demo.
-             *
-             * No real payment gateway is used.
-             *
-             * No card information is sent
-             * anywhere.
-             */
-
-
-            reservations[
-                reservationIndex
-                ].paid = true;
-
-
-            reservations[
-                reservationIndex
-                ].paymentTime =
-                new Date().toISOString();
-
-
-
-            localStorage.setItem(
-                "reservations",
-                JSON.stringify(
-                    reservations
-                )
-            );
-
-
-
-            /* Hide form */
-
-            paymentForm.style.display =
-                "none";
-
-
-
-            /* Show success */
-
-            paymentSuccess.style.display =
-                "block";
-
-        }
-    );
-
-
-</script>
+<script src="js/payment.js"></script>
 
 </body>
 
