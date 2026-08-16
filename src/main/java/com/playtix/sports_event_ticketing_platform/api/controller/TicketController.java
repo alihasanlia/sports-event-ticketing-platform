@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+
 @RestController
 @RequestMapping("/api/v1/tickets")
 @RequiredArgsConstructor
@@ -25,6 +26,11 @@ public class TicketController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ticketService.createTicket(request));
     }
 
+    @GetMapping
+    public ResponseEntity<List<TicketSummaryDto>> getAllTicketsSummary() {
+        return ResponseEntity.ok(ticketService.getTicketsSummary());
+    }
+    
     @GetMapping("/{ticketId}/summary")
     public ResponseEntity<TicketSummaryDto> getTicketSummary(@PathVariable UUID ticketId) {
         return ResponseEntity.ok(ticketService.getTicketSummary(ticketId));

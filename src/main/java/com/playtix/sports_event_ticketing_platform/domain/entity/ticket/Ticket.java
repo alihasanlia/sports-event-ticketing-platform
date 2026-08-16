@@ -72,7 +72,6 @@ public class Ticket {
 
     private Reservation reservation;
     
-    // متد جایگزین @PrePersist برای مقداردهی اولیه
     public void initializeDefaults() {
         if (this.finalPrice == null && this.price != null) {
             this.finalPrice = this.price.subtract(

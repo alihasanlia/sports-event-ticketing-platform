@@ -54,6 +54,12 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
+    public List<TicketSummaryDto> getTicketsSummary() {
+        List<Ticket> tickets = ticketRepository.findAll();
+        return ticketMapper.toSummaryDtoList(tickets);
+    }
+
+    @Transactional(readOnly = true)
     public TicketSummaryDto getTicketSummary(UUID ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));

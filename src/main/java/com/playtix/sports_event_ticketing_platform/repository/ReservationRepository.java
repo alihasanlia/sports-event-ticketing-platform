@@ -107,7 +107,10 @@ public class ReservationRepository {
         }
     }
 
-    // --- Interface Specific Query Methods ---
+    public void updateStatus(UUID reservationId, ReservationStatus status) {
+        String sql = "UPDATE reservations SET status = ? WHERE id = ?";
+        jdbcTemplate.update(sql, status.name(), reservationId.toString());
+    }
 
     public List<Reservation> findByStatus(ReservationStatus status) {
         String sql = "SELECT * FROM reservations WHERE status = ?";
