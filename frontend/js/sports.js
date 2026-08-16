@@ -129,6 +129,52 @@ const sportInfo = {
 
 
 /* =====================================================
+   GET SPORT ID BY NAME
+===================================================== */
+
+async function getSportIdByName(sportName) {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/api/v1/sports/name/${sportName}`,
+                {
+                    method: "GET",
+
+                    headers:
+                        getAuthHeaders()
+                }
+            );
+
+        if (!response.ok) {
+
+            console.error(
+                "Could not get sport ID:",
+                response.status
+            );
+
+            return null;
+        }
+
+        const sportData =
+            await response.json();
+
+        return sportData.id;
+
+    } catch (error) {
+
+        console.error(
+            "Get sport ID error:",
+            error
+        );
+
+        return null;
+    }
+}
+
+
+/* =====================================================
    LOAD SPORT DATA
 ===================================================== */
 
@@ -166,19 +212,35 @@ async function loadSportData() {
 
     try {
 
-        const sportType =
+        const sportName =
             sportInfo[sport].sportType;
 
-        // Load stadiums for this sport
-        // Note: The StadiumController doesn't have a sport filter
-        // We'll use the stadiums endpoint and filter manually
-        // Or we can use the match endpoint to find stadiums
+        // Get Sport ID from name
+        const sportId =
+            await getSportIdByName(sportName);
+
+        if (!sportId) {
+
+            sportLoading.textContent =
+                "Could not find sport.";
+
+            sportLoading.style.color =
+                "#e74c3c";
+
+            return;
+        }
 
 
-        // Load leagues for this sport
+        console.log(
+            "Sport ID:",
+            sportId
+        );
+
+
+        // Load leagues for this sport using /sport/{sportId}
         const leaguesResponse =
             await fetch(
-                `${API_BASE_URL}/api/v1/leagues/sport/${sportType}`,
+                `${API_BASE_URL}/api/v1/leagues/sport/${sportId}`,
                 {
                     method: "GET",
 
@@ -188,10 +250,13 @@ async function loadSportData() {
             );
 
 
-        const leagues =
-            leaguesResponse.ok
-                ? await leaguesResponse.json()
-                : [];
+        let leagues = [];
+
+        if (leaguesResponse.ok) {
+
+            leagues =
+                await leaguesResponse.json();
+        }
 
 
         console.log(
@@ -200,10 +265,38 @@ async function loadSportData() {
         );
 
 
+        // Load tournaments for this sport using /sport/{sportId}
+        const tournamentsResponse =
+            await fetch(
+                `${API_BASE_URL}/api/v1/tournaments/sport/${sportId}`,
+                {
+                    method: "GET",
+
+                    headers:
+                        getAuthHeaders()
+                }
+            );
+
+
+        let tournaments = [];
+
+        if (tournamentsResponse.ok) {
+
+            tournaments =
+                await tournamentsResponse.json();
+        }
+
+
+        console.log(
+            "Tournaments:",
+            tournaments
+        );
+
+
         // Load stadiums - we'll get them from matches
         const matchesResponse =
             await fetch(
-                `${API_BASE_URL}/api/v1/matches/sport/${sportType}`,
+                `${API_BASE_URL}/api/v1/matches/sport/${sportName}`,
                 {
                     method: "GET",
 
@@ -271,16 +364,18 @@ async function loadSportData() {
         }
 
 
-        // Display leagues
-        if (leagues.length > 0) {
+        // Display leagues (combine leagues and tournaments)
+        const allLeagues = [...leagues, ...tournaments];
 
-            displayLeagues(leagues);
+        if (allLeagues.length > 0) {
+
+            displayLeagues(allLeagues);
 
         } else {
 
             leaguesGrid.innerHTML =
                 `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
-                    No leagues available for this sport.
+                    No leagues or tournaments available for this sport.
                 </div>`;
         }
 
@@ -372,17 +467,36 @@ function displayLeagues(leagues) {
             const card =
                 document.createElement("a");
 
+            // Check if it's a league or tournament
+            const isTournament =
+                league.tournamentType ||
+                league.startDate ||
+                false;
+
+            const linkType =
+                isTournament ? "tournament" : "league";
+
             card.href =
-                `results.html?type=league&id=${league.id}`;
+                `results.html?type=${linkType}&id=${league.id}`;
 
             card.className =
                 "sport-item-card";
 
 
+            const icon =
+                isTournament ? "🏆" : "🏆";
+
+
+            const country =
+                league.country ||
+                league.location ||
+                "International";
+
+
             card.innerHTML = `
 
                 <div class="sport-item-icon">
-                    🏆
+                    ${icon}
                 </div>
 
                 <div class="sport-item-content">
@@ -392,7 +506,8 @@ function displayLeagues(leagues) {
                     </h2>
 
                     <p>
-                        ${league.country || "International"}
+                        ${country}
+                        ${isTournament ? ` • ${league.tournamentType || "Tournament"}` : ""}
                     </p>
 
                     <span class="item-link">

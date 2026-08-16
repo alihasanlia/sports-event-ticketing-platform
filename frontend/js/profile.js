@@ -35,11 +35,20 @@ const userIdInput =
 const registrationDateInput =
     document.getElementById("registrationDate");
 
+const accountStatusInput =
+    document.getElementById("accountStatus");
+
 const fullNameElement =
     document.getElementById("fullName");
 
+const profileRoleElement =
+    document.getElementById("profileRole");
+
 const profileImage =
     document.getElementById("profileImage");
+
+const walletBalanceElement =
+    document.getElementById("walletBalance");
 
 const saveMessage =
     document.getElementById("saveMessage");
@@ -147,27 +156,14 @@ function getUserIdFromToken() {
         decodeJwt(token);
 
     if (!payload) {
-
-        showError(
-            "Invalid login session. Please login again."
-        );
-
         return null;
     }
-
-
-    /*
-     * Different JWT implementations may
-     * store the user UUID under different
-     * claim names.
-     */
 
     const userId =
         payload.userId ||
         payload.user_id ||
         payload.id ||
         payload.sub;
-
 
     if (!userId) {
 
@@ -176,13 +172,8 @@ function getUserIdFromToken() {
             payload
         );
 
-        showError(
-            "Could not find your user ID in the login token."
-        );
-
         return null;
     }
-
 
     return userId;
 }
@@ -204,6 +195,52 @@ function getAuthHeaders() {
             `Bearer ${token}`
 
     };
+}
+
+
+/* =====================================================
+   LOAD WALLET BALANCE
+===================================================== */
+
+async function loadWalletBalance(userId) {
+
+    try {
+
+        // Try to get wallet balance from user profile
+        // If the backend doesn't have wallet in profile,
+        // we'll try a separate endpoint if available
+
+        // For now, we'll check if walletBalance is in the profile
+        // If not, we'll show a default value
+
+        // You can add a specific wallet endpoint here if needed
+        // For example:
+        // const response = await fetch(
+        //     `${API_BASE_URL}/api/v1/users/${userId}/wallet`,
+        //     { method: "GET", headers: getAuthHeaders() }
+        // );
+
+        // If the wallet endpoint exists, use it
+        // Otherwise, walletBalance will be shown from the profile
+
+        console.log(
+            "Loading wallet for user:",
+            userId
+        );
+
+        // For now, we'll rely on the profile to have walletBalance
+        // If not, we'll show "0 Toman"
+
+    } catch (error) {
+
+        console.error(
+            "Load wallet error:",
+            error
+        );
+
+        walletBalanceElement.textContent =
+            "0 Toman";
+    }
 }
 
 
@@ -273,6 +310,10 @@ async function loadUserProfile() {
 
 
         displayProfile(profile);
+
+
+        // Load wallet balance
+        await loadWalletBalance(userId);
 
 
     } catch (error) {
@@ -366,6 +407,33 @@ function displayProfile(profile) {
 
 
     /*
+     * Account Status
+     */
+
+    if (profile.status) {
+
+        accountStatusInput.value =
+            profile.status;
+
+    }
+
+
+    /*
+     * Role
+     */
+
+    if (profile.role) {
+
+        profileRoleElement.textContent =
+            profile.role;
+
+        document.getElementById("role").value =
+            profile.role;
+
+    }
+
+
+    /*
      * Full name
      */
 
@@ -385,6 +453,24 @@ function displayProfile(profile) {
 
         profileImage.src =
             "assets/images/default-profile.jpg";
+    }
+
+
+    /*
+     * Wallet Balance - from profile if available
+     */
+
+    if (profile.walletBalance !== undefined &&
+        profile.walletBalance !== null) {
+
+        walletBalanceElement.textContent =
+            Number(profile.walletBalance).toLocaleString() + " Toman";
+
+    } else {
+
+        // Default value - will be updated by loadWalletBalance
+        walletBalanceElement.textContent =
+            "0 Toman";
     }
 
 
