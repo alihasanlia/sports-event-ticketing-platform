@@ -1,3 +1,17 @@
+SELECT * FROM users;
+
+INSERT INTO sports (id, name, description, number_of_players) VALUES
+('00000000-0000-0000-0000-000000000001', 'Football', 'A team sport played between two teams of eleven players.', 11),
+('00000000-0000-0000-0000-000000000002', 'Basketball', 'A team sport where two teams compete to score points by shooting a ball through a hoop.', 5),
+('00000000-0000-0000-0000-000000000003', 'Volleyball', 'A team sport where players try to ground the ball on the opponent side of the court.', 6),
+('00000000-0000-0000-0000-000000000004', 'Tennis', 'A racket sport played in singles or doubles.', 1),
+('00000000-0000-0000-0000-000000000005', 'Handball', 'A fast-paced team sport where players throw a ball into the opponent goal.', 7),
+('00000000-0000-0000-0000-000000000006', 'Futsal', 'An indoor football variant played between two teams of five players.', 5),
+('00000000-0000-0000-0000-000000000007', 'Rugby', 'A contact team sport played with an oval-shaped ball.', 15),
+('00000000-0000-0000-0000-000000000008', 'Ice Hockey', 'A team sport played on ice where players use sticks to score goals.', 6),
+('00000000-0000-0000-0000-000000000009', 'Baseball', 'A bat-and-ball team sport played between two teams.', 9),
+('00000000-0000-0000-0000-000000000010', 'Cricket', 'A bat-and-ball sport played between two teams of eleven players.', 11);
+
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     firstname VARCHAR(50) NOT NULL,

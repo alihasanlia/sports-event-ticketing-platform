@@ -8,12 +8,19 @@ loginForm.addEventListener("submit", async function (event) {
 
     event.preventDefault();
 
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
-    const role = document.getElementById("role").value;
+    const email =
+        document.getElementById("email").value.trim();
+
+    const password =
+        document.getElementById("password").value;
+
+    const role =
+        document.getElementById("role").value;
 
     if (!email || !password || !role) {
-        loginMessage.textContent = "Please fill in all fields.";
+        loginMessage.textContent =
+            "Please fill in all fields.";
+
         return;
     }
 
@@ -23,37 +30,73 @@ loginForm.addEventListener("submit", async function (event) {
 
     try {
 
-        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-            method: "POST",
+        const response = await fetch(
+            `${API_BASE_URL}/api/auth/login`,
+            {
+                method: "POST",
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-            body: JSON.stringify({
-                email: email,
-                password: password,
-                role: role
-            })
-        });
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                    role: role
+                })
+            }
+        );
 
-        const data = await response.json();
+        const contentType =
+            response.headers.get("content-type");
 
-        if (!response.ok) {
-            throw new Error(data.message || "Login failed.");
+        let data = {};
+
+        if (
+            contentType &&
+            contentType.includes("application/json")
+        ) {
+            data = await response.json();
+        } else {
+            const text = await response.text();
+
+            data = {
+                message: text
+            };
         }
 
-        // Backend returns: { "token": "..." }
-        localStorage.setItem("token", data.token);
+        if (!response.ok) {
+            throw new Error(
+                data.message ||
+                `Login failed (${response.status}).`
+            );
+        }
 
-        // Save the selected role too
-        localStorage.setItem("role", role);
-        localStorage.setItem("email", email);
+        if (!data.token) {
+            throw new Error(
+                "Login succeeded but no token was returned."
+            );
+        }
 
-        // Redirect based on role
+        localStorage.setItem(
+            "token",
+            data.token
+        );
+
+        localStorage.setItem(
+            "role",
+            role
+        );
+
+        localStorage.setItem(
+            "email",
+            email
+        );
+
         if (role === "USER") {
             window.location.href = "index.html";
         }
+
         else if (role === "SUPPORT") {
             window.location.href = "admin-index.html";
         }
@@ -63,11 +106,13 @@ loginForm.addEventListener("submit", async function (event) {
         console.error("Login error:", error);
 
         loginMessage.textContent =
-            error.message || "Something went wrong. Please try again.";
+            error.message ||
+            "Something went wrong. Please try again.";
 
     } finally {
 
         loginButton.disabled = false;
         loginButton.textContent = "Login";
     }
+
 });

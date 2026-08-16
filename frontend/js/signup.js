@@ -18,7 +18,7 @@ signupForm.addEventListener("submit", async function (event) {
         document.getElementById("email").value.trim();
 
     const phoneNumber =
-        document.getElementById("phone").value.trim();
+        document.getElementById("phoneNumber").value.trim();
 
     const city =
         document.getElementById("city").value.trim();
@@ -29,15 +29,11 @@ signupForm.addEventListener("submit", async function (event) {
     const confirmPassword =
         document.getElementById("confirmPassword").value;
 
-
-    // Check password confirmation
     if (password !== confirmPassword) {
         signupMessage.textContent = "Passwords do not match.";
         return;
     }
 
-
-    // Basic phone validation
     const phoneRegex = /^09[0-9]{9}$/;
 
     if (!phoneRegex.test(phoneNumber)) {
@@ -47,11 +43,9 @@ signupForm.addEventListener("submit", async function (event) {
         return;
     }
 
-
     signupButton.disabled = true;
     signupButton.textContent = "Creating account...";
     signupMessage.textContent = "";
-
 
     try {
 
@@ -75,9 +69,18 @@ signupForm.addEventListener("submit", async function (event) {
             }
         );
 
+        const contentType = response.headers.get("content-type");
 
-        const data = await response.json();
+        let data = {};
 
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            const text = await response.text();
+            data = {
+                message: text
+            };
+        }
 
         if (!response.ok) {
             throw new Error(
@@ -85,19 +88,14 @@ signupForm.addEventListener("submit", async function (event) {
             );
         }
 
-
         console.log("Registered user:", data);
-
 
         signupMessage.textContent =
             "Account created successfully!";
 
-
-        // Go to login after successful registration
         setTimeout(() => {
             window.location.href = "login.html";
         }, 1000);
-
 
     } catch (error) {
 
@@ -106,7 +104,6 @@ signupForm.addEventListener("submit", async function (event) {
         signupMessage.textContent =
             error.message ||
             "Something went wrong. Please try again.";
-
 
     } finally {
 
