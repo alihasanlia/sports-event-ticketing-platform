@@ -117,16 +117,16 @@ public class Reservation {
     }
 
     public void expire() {
-    if (this.status != ReservationStatus.PENDING) {
-        throw new IllegalStateException("Only pending reservations can expire");
+        if (this.status != ReservationStatus.PENDING) {
+            throw new IllegalStateException("Only pending reservations can expire");
+        }
+        
+        this.status = ReservationStatus.CANCELLED;
+        
+        if (this.ticket != null) {
+            this.ticket.setReservation(null);
+        }
     }
-    
-    this.status = ReservationStatus.CANCELLED;
-    
-    if (this.ticket != null) {
-        this.ticket.setReservation(null);
-    }
-}
 
     public boolean isPending() {
         return this.status == ReservationStatus.PENDING;

@@ -43,7 +43,6 @@ public class UserRepository {
         if (roleStr != null) {
             user.setRole(Role.valueOf(roleStr));
         }
-        // افزودن فیلد balance
         java.math.BigDecimal balance = rs.getBigDecimal("balance");
         if (balance != null) {
             user.setBalance(balance);
@@ -223,7 +222,7 @@ public class UserRepository {
         String sql = "SELECT * FROM users WHERE status = 'ACTIVE'";
         return jdbcTemplate.query(sql, userRowMapper);
     }
-
+    
     public int updateBalance(UUID userId, java.math.BigDecimal newBalance) {
         String sql = "UPDATE users SET balance = ? WHERE id = ?";
         return jdbcTemplate.update(sql, newBalance, userId);
@@ -248,4 +247,5 @@ public class UserRepository {
         String sql = "SELECT * FROM users WHERE balance < ?";
         return jdbcTemplate.query(sql, userRowMapper, amount);
     }
+
 }

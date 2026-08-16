@@ -13,6 +13,7 @@ import com.playtix.sports_event_ticketing_platform.mapper.ReservationMapper;
 import com.playtix.sports_event_ticketing_platform.repository.ReservationRepository;
 import com.playtix.sports_event_ticketing_platform.repository.TicketRepository;
 import com.playtix.sports_event_ticketing_platform.repository.UserRepository;
+import com.playtix.sports_event_ticketing_platform.service.redis.ReservationLockService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class ReservationService {
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
     private final ReservationMapper reservationMapper;
+    private final ReservationLockService reservationLockService;
 
     @Transactional
     public UserReservationDto createReservation(CreateReservationRequest request) {
@@ -45,6 +47,12 @@ public class ReservationService {
 
         if (reservationRepository.existsActiveReservationForTicket(ticket.getId())) {
             throw new RuntimeException("Ticket is already reserved");
+        }
+
+        // Acquire distributed temporary lock in Redis (SETNX) with TTL
+        boolean locked = reservationLockService.acquireLock(ticket.getId(), user.getId());
+        if (!locked) {
+            throw new RuntimeException("Ticket is temporarily locked by another user");
         }
 
         ticket.reserve();
@@ -78,6 +86,8 @@ public class ReservationService {
 
         reservation.cancel();
         reservationRepository.save(reservation);
+        // Release Redis reservation lock on cancellation
+        reservationLockService.releaseLock(reservation.getTicket().getId(), userId);
     }
 
     @Transactional
@@ -95,6 +105,8 @@ public class ReservationService {
 
         reservation.confirm();
         reservation = reservationRepository.save(reservation);
+        // Release lock after confirmation
+        reservationLockService.releaseLock(reservation.getTicket().getId(), reservation.getUser().getId());
 
         return reservationMapper.toUserReservationDto(reservation);
     }
@@ -110,6 +122,8 @@ public class ReservationService {
 
         reservation.expire();
         reservationRepository.save(reservation);
+        // Release lock on expiration
+        reservationLockService.releaseLock(reservation.getTicket().getId(), reservation.getUser().getId());
     }
 
     @Transactional(readOnly = true)
