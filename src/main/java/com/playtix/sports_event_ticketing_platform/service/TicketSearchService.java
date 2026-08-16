@@ -1,6 +1,5 @@
 package com.playtix.sports_event_ticketing_platform.service;
 
-import com.playtix.sports_event_ticketing_platform.mapper.TicketMapper;
 import com.playtix.sports_event_ticketing_platform.service.redis.RedisCacheService;
 import com.playtix.sports_event_ticketing_platform.config.RedisCacheProperties;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.UUID;
 
@@ -18,7 +18,6 @@ public class TicketSearchService {
     private final TicketService ticketService;
     private final RedisCacheService redisCacheService;
     private final RedisCacheProperties redisCacheProperties;
-    private final TicketMapper ticketMapper;
 
     /**
      * Search tickets with simple key composition and cache-aside pattern.
@@ -27,15 +26,14 @@ public class TicketSearchService {
         String searchKey = buildSearchKey(matchId, categoryId, sport, city, team, priceRange);
         String cacheKey = "ticket-search:" + searchKey;
 
-        return redisCacheService.get(cacheKey)
-                .map(obj -> (List<?>) obj)
-                .orElseGet(() -> {
-                    // currently delegate to TicketService; adapt as you add filtering
-                    List<?> results = ticketService.getTicketsByMatch(matchId);
+        Optional<Object> cachedOpt = redisCacheService.get(cacheKey);
+        if (cachedOpt.isPresent() && cachedOpt.get() instanceof List<?>) {
+            return (List<?>) cachedOpt.get();
+        }
 
-                    redisCacheService.put(cacheKey, results, Duration.ofSeconds(redisCacheProperties.getSearchCacheTtl()));
-                    return results;
-                });
+        List<?> results = ticketService.getTicketsByMatch(matchId);
+        redisCacheService.put(cacheKey, results, Duration.ofSeconds(redisCacheProperties.getSearchCacheTtl()));
+        return results;
     }
 
     private String buildSearchKey(UUID matchId, UUID categoryId, String sport, String city, String team, String priceRange) {
