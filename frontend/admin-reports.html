@@ -29,7 +29,7 @@
     <div class="header-content">
 
         <a
-                href="index.html"
+                href="admin-index.html"
                 class="logo"
         >
             PlayTix
@@ -39,10 +39,10 @@
         <nav class="main-nav">
 
             <a
-                    href="index.html"
+                    href="admin-index.html"
                     class="nav-link"
             >
-                Home
+                Dashboard
             </a>
 
             <a
@@ -92,302 +92,49 @@
     </div>
 
 
+    <!-- ================= FILTERS ================= -->
+
+    <div class="report-filters">
+        <select id="statusFilter" class="status-select">
+            <option value="ALL">All Reports</option>
+            <option value="PENDING">Pending</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="RESOLVED">Resolved</option>
+            <option value="CLOSED">Closed</option>
+        </select>
+    </div>
+
+
+    <!-- ================= LOADING ================= -->
+
+    <div id="reportsLoading" style="text-align: center; padding: 2rem;">
+        Loading reports...
+    </div>
+
 
     <!-- ================= REPORT LIST ================= -->
 
-    <section class="reports-list">
+    <section id="reportsList" class="reports-list">
 
-
-        <!-- ================= REPORT 1 ================= -->
-
-        <article class="report-card">
-
-
-            <!-- Header -->
-
-            <div class="report-card-header">
-
-                <div>
-
-                    <h2>
-                        Payment Problem
-                    </h2>
-
-                    <span class="report-date">
-                            August 4, 2026 - 14:32
-                        </span>
-
-                </div>
-
-
-                <select
-                        class="status-select"
-                        data-report-id="RPT-1001"
-                >
-
-                    <option value="PENDING" selected>
-                        PENDING
-                    </option>
-
-                    <option value="IN_PROGRESS">
-                        IN PROGRESS
-                    </option>
-
-                    <option value="RESOLVED">
-                        RESOLVED
-                    </option>
-
-                    <option value="CLOSED">
-                        CLOSED
-                    </option>
-
-                </select>
-
-            </div>
-
-
-
-            <!-- User -->
-
-            <div class="report-user">
-
-                <strong>
-                    Reported By
-                </strong>
-
-                <span>
-                        alihasanlia
-                    </span>
-
-            </div>
-
-
-
-            <!-- Report Details -->
-
-            <div class="report-content">
-
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Report ID
-                        </span>
-
-                    <p>
-                        #RPT-1001
-                    </p>
-
-                </div>
-
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Subject
-                        </span>
-
-                    <p>
-                        Payment Problem
-                    </p>
-
-                </div>
-
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Report
-                        </span>
-
-                    <p>
-                        I completed the payment but my ticket
-                        has not appeared in my reservations.
-                    </p>
-
-                </div>
-
-
-                <!-- Admin Response -->
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Admin Response
-                        </span>
-
-                    <textarea
-                            class="admin-response"
-                            data-report-id="RPT-1001"
-                            rows="5"
-                            placeholder="Write a response..."
-                    ></textarea>
-
-                </div>
-
-
-            </div>
-
-
-
-            <!-- Actions -->
-
-            <div class="report-actions">
-
-                <button
-                        class="primary-btn save-response-btn"
-                        data-report-id="RPT-1001"
-                >
-                    Save Response
-                </button>
-
-            </div>
-
-
-        </article>
-
-
-
-        <!-- ================= REPORT 2 ================= -->
-
-        <article class="report-card">
-
-
-            <div class="report-card-header">
-
-                <div>
-
-                    <h2>
-                        Ticket Cancellation
-                    </h2>
-
-                    <span class="report-date">
-                            July 30, 2026 - 11:20
-                        </span>
-
-                </div>
-
-
-                <select
-                        class="status-select"
-                        data-report-id="RPT-1002"
-                >
-
-                    <option value="PENDING">
-                        PENDING
-                    </option>
-
-                    <option value="IN_PROGRESS">
-                        IN PROGRESS
-                    </option>
-
-                    <option value="RESOLVED" selected>
-                        RESOLVED
-                    </option>
-
-                    <option value="CLOSED">
-                        CLOSED
-                    </option>
-
-                </select>
-
-            </div>
-
-
-
-            <div class="report-user">
-
-                <strong>
-                    Reported By
-                </strong>
-
-                <span>
-                        user02
-                    </span>
-
-            </div>
-
-
-
-            <div class="report-content">
-
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Report ID
-                        </span>
-
-                    <p>
-                        #RPT-1002
-                    </p>
-
-                </div>
-
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Subject
-                        </span>
-
-                    <p>
-                        Ticket Cancellation
-                    </p>
-
-                </div>
-
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Report
-                        </span>
-
-                    <p>
-                        I cancelled my ticket but I have not
-                        received my refund yet.
-                    </p>
-
-                </div>
-
-
-                <div class="report-field">
-
-                        <span class="report-label">
-                            Admin Response
-                        </span>
-
-                    <textarea
-                            class="admin-response"
-                            data-report-id="RPT-1002"
-                            rows="5"
-                    >Your refund has been processed successfully. It should appear in your wallet shortly.</textarea>
-
-                </div>
-
-
-            </div>
-
-
-
-            <div class="report-actions">
-
-                <button
-                        class="primary-btn save-response-btn"
-                        data-report-id="RPT-1002"
-                >
-                    Save Response
-                </button>
-
-            </div>
-
-
-        </article>
-
-
+        <!-- Reports are generated by JavaScript -->
 
     </section>
+
+
+    <!-- ================= NO REPORTS ================= -->
+
+    <div id="noReports" class="no-search-results" style="display: none;">
+
+        <h2>
+            No Reports Found
+        </h2>
+
+        <p>
+            No reports match the current filter.
+        </p>
+
+    </div>
+
 
 </main>
 
@@ -407,133 +154,7 @@
 
 <!-- ================= JAVASCRIPT ================= -->
 
-<script>
-
-
-    /*
-     * Save / Edit Admin Response
-     */
-
-    const responseButtons =
-        document.querySelectorAll(
-            ".save-response-btn"
-        );
-
-
-    responseButtons.forEach(function (button) {
-
-        button.addEventListener(
-            "click",
-            function () {
-
-                const reportId =
-                    button.dataset.reportId;
-
-
-                const responseBox =
-                    document.querySelector(
-                        `.admin-response[data-report-id="${reportId}"]`
-                    );
-
-
-                const response =
-                    responseBox.value.trim();
-
-
-                if (response === "") {
-
-                    alert(
-                        "Please write a response first."
-                    );
-
-                    return;
-
-                }
-
-
-                /*
-                 * Backend connection will be added later.
-                 *
-                 * Example:
-                 *
-                 * PUT /api/reports/{reportId}
-                 *
-                 * {
-                 *     adminResponse: response
-                 * }
-                 */
-
-
-                console.log({
-                    reportId: reportId,
-                    adminResponse: response
-                });
-
-
-                alert(
-                    "Response saved successfully."
-                );
-
-            }
-        );
-
-    });
-
-
-
-    /*
-     * Change Report Status
-     */
-
-    const statusSelects =
-        document.querySelectorAll(
-            ".status-select"
-        );
-
-
-    statusSelects.forEach(function (select) {
-
-        select.addEventListener(
-            "change",
-            function () {
-
-                const reportId =
-                    select.dataset.reportId;
-
-                const newStatus =
-                    select.value;
-
-
-                /*
-                 * Backend connection will be added later.
-                 *
-                 * Example:
-                 *
-                 * PATCH /api/reports/{reportId}/status
-                 *
-                 * {
-                 *     status: newStatus
-                 * }
-                 */
-
-
-                console.log({
-                    reportId: reportId,
-                    status: newStatus
-                });
-
-
-                alert(
-                    "Report status updated."
-                );
-
-            }
-        );
-
-    });
-
-
-</script>
+<script src="js/admin-reports.js"></script>
 
 
 </body>
