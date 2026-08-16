@@ -29,7 +29,7 @@
   <div class="header-content">
 
     <a
-            href="index.html"
+            href="admin-index.html"
             class="logo"
     >
       PlayTix
@@ -39,10 +39,10 @@
     <nav class="main-nav">
 
       <a
-              href="index.html"
+              href="admin-index.html"
               class="nav-link"
       >
-        Home
+        Dashboard
       </a>
 
       <a
@@ -85,7 +85,7 @@
         Edit Ticket
       </h1>
 
-      <p>
+      <p id="editTicketStatus">
         Update the information of the selected ticket.
       </p>
 
@@ -94,9 +94,54 @@
   </div>
 
 
-  <!-- ================= EDIT FORM ================= -->
+  <!-- ================= NOT AVAILABLE MESSAGE ================= -->
 
-  <section class="new-report-card">
+  <div id="notAvailableMessage" class="admin-info-box" style="border-left-color: #e74c3c;">
+
+    <div class="admin-info-icon">
+      ⚠️
+    </div>
+
+    <div>
+
+      <h3 style="color: #e74c3c;">
+        Edit Ticket Not Available
+      </h3>
+
+      <p>
+        The Backend does not currently provide an endpoint for editing tickets.
+        <br><br>
+        <strong>Available endpoints:</strong>
+        <br>
+        • GET /api/v1/tickets/{ticketId}/details - View ticket details
+        <br>
+        • GET /api/v1/tickets/user/{userId} - List user tickets
+        <br><br>
+        <strong>Not available:</strong>
+        <br>
+        • PUT /api/v1/tickets - Update ticket
+        <br>
+        • PATCH /api/v1/tickets/{ticketId} - Partial update ticket
+        <br><br>
+        If you need to update a ticket, please contact the development team to add this functionality to the backend.
+      </p>
+
+      <a
+              href="admin-tickets.html"
+              class="primary-btn"
+              style="margin-top: 1rem; display: inline-block;"
+      >
+        ← Back to Tickets
+      </a>
+
+    </div>
+
+  </div>
+
+
+  <!-- ================= EDIT FORM (Disabled - No Backend API) ================= -->
+
+  <section id="editFormSection" class="new-report-card" style="display: none;">
 
     <div class="form-header">
 
@@ -106,7 +151,7 @@
           Ticket Information
         </h2>
 
-        <p class="ticket-id">
+        <p class="ticket-id" id="ticketIdDisplay">
           Ticket ID: #TCK-1001
         </p>
 
@@ -115,7 +160,7 @@
     </div>
 
 
-    <form id="editTicketForm">
+    <form id="editTicketForm" onsubmit="return false;">
 
 
       <!-- Customer -->
@@ -129,7 +174,7 @@
         <input
                 type="text"
                 id="username"
-                value="alihasanlia"
+                value="Loading..."
                 readonly
         >
 
@@ -147,6 +192,7 @@
         <select
                 id="sport"
                 name="sport"
+                disabled
         >
 
           <option value="football" selected>
@@ -163,6 +209,10 @@
 
         </select>
 
+        <small style="color: #e74c3c; display: block; margin-top: 0.25rem;">
+          ⚠️ Edit disabled - No backend API available
+        </small>
+
       </div>
 
 
@@ -178,9 +228,13 @@
                 type="text"
                 id="match"
                 name="match"
-                value="Team A vs Team B"
-                required
+                value="Loading..."
+                disabled
         >
+
+        <small style="color: #e74c3c; display: block; margin-top: 0.25rem;">
+          ⚠️ Edit disabled - No backend API available
+        </small>
 
       </div>
 
@@ -198,8 +252,12 @@
                 id="matchDate"
                 name="matchDate"
                 value="2026-08-15"
-                required
+                disabled
         >
+
+        <small style="color: #e74c3c; display: block; margin-top: 0.25rem;">
+          ⚠️ Edit disabled - No backend API available
+        </small>
 
       </div>
 
@@ -217,8 +275,12 @@
                 id="matchTime"
                 name="matchTime"
                 value="18:30"
-                required
+                disabled
         >
+
+        <small style="color: #e74c3c; display: block; margin-top: 0.25rem;">
+          ⚠️ Edit disabled - No backend API available
+        </small>
 
       </div>
 
@@ -235,9 +297,13 @@
                 type="text"
                 id="stadium"
                 name="stadium"
-                value="Azadi Stadium"
-                required
+                value="Loading..."
+                disabled
         >
+
+        <small style="color: #e74c3c; display: block; margin-top: 0.25rem;">
+          ⚠️ Edit disabled - No backend API available
+        </small>
 
       </div>
 
@@ -253,6 +319,7 @@
         <select
                 id="category"
                 name="category"
+                disabled
         >
 
           <option value="VIP" selected>
@@ -264,6 +331,10 @@
           </option>
 
         </select>
+
+        <small style="color: #e74c3c; display: block; margin-top: 0.25rem;">
+          ⚠️ Edit disabled - No backend API available
+        </small>
 
       </div>
 
@@ -280,9 +351,13 @@
                 type="text"
                 id="seat"
                 name="seat"
-                value="A-12"
-                required
+                value="Loading..."
+                disabled
         >
+
+        <small style="color: #e74c3c; display: block; margin-top: 0.25rem;">
+          ⚠️ Edit disabled - No backend API available
+        </small>
 
       </div>
 
@@ -299,10 +374,14 @@
                 type="number"
                 id="price"
                 name="price"
-                value="1000000"
+                value="0"
                 min="0"
-                required
+                disabled
         >
+
+        <small style="color: #e74c3c; display: block; margin-top: 0.25rem;">
+          ⚠️ Edit disabled - No backend API available
+        </small>
 
       </div>
 
@@ -318,6 +397,7 @@
         <select
                 id="status"
                 name="status"
+                disabled
         >
 
           <option value="ACTIVE" selected>
@@ -334,6 +414,10 @@
 
         </select>
 
+        <small style="color: #e74c3c; display: block; margin-top: 0.25rem;">
+          ⚠️ Edit disabled - No backend API available
+        </small>
+
       </div>
 
 
@@ -345,14 +429,17 @@
                 href="admin-tickets.html"
                 class="edit-btn"
         >
-          Back
+          Back to Tickets
         </a>
 
         <button
-                type="submit"
+                type="button"
                 class="primary-btn"
+                disabled
+                style="opacity: 0.5; cursor: not-allowed;"
+                title="Edit functionality is not available in the backend"
         >
-          Save Changes
+          Save Changes (Unavailable)
         </button>
 
       </div>
@@ -378,94 +465,7 @@
 
 <!-- ================= JAVASCRIPT ================= -->
 
-<script>
-
-  const editTicketForm =
-          document.getElementById("editTicketForm");
-
-
-  editTicketForm.addEventListener(
-          "submit",
-          function (event) {
-
-            event.preventDefault();
-
-
-            const ticketData = {
-
-              ticketId: "TCK-1001",
-
-              sport:
-              document.getElementById("sport").value,
-
-              match:
-              document.getElementById("match").value,
-
-              date:
-              document.getElementById("matchDate").value,
-
-              time:
-              document.getElementById("matchTime").value,
-
-              stadium:
-              document.getElementById("stadium").value,
-
-              category:
-              document.getElementById("category").value,
-
-              seat:
-              document.getElementById("seat").value,
-
-              price:
-              document.getElementById("price").value,
-
-              status:
-              document.getElementById("status").value
-
-            };
-
-
-            /*
-             * Backend connection will be added later.
-             *
-             * Example:
-             *
-             * PUT /api/tickets/{ticketId}
-             *
-             * Body:
-             *
-             * {
-             *     sport,
-             *     match,
-             *     date,
-             *     time,
-             *     stadium,
-             *     category,
-             *     seat,
-             *     price,
-             *     status
-             * }
-             */
-
-
-            console.log(
-                    "Updated ticket:",
-                    ticketData
-            );
-
-
-            alert(
-                    "Ticket has been updated successfully."
-            );
-
-
-            window.location.href =
-                    "admin-tickets.html";
-
-          }
-  );
-
-</script>
+<script src="js/edit-ticket.js"></script>
 
 </body>
 

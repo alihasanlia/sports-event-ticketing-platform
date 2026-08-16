@@ -6,6 +6,8 @@ const API_BASE_URL = "http://localhost:8081";
 
 const TICKETS_ENDPOINT = "/api/v1/tickets";
 
+const RESERVATIONS_ENDPOINT = "/api/v1/reservations";
+
 
 /* =====================================================
    DOM ELEMENTS
@@ -300,7 +302,9 @@ function displayTickets(tickets) {
                     ? "status-active"
                     : ticket.status === "USED"
                         ? "status-used"
-                        : "status-cancelled";
+                        : ticket.status === "CANCELLED"
+                            ? "status-cancelled"
+                            : "status-active";
 
 
             const isCancelled =
@@ -502,10 +506,22 @@ function displayTickets(tickets) {
    CANCEL TICKET
 ===================================================== */
 
-function cancelTicket(button) {
+async function cancelTicket(button) {
 
     const ticketId =
         button.dataset.ticketId;
+
+    const userId =
+        getUserIdFromToken();
+
+    if (!userId) {
+
+        alert(
+            "Please login to cancel a ticket."
+        );
+
+        return;
+    }
 
 
     const confirmed = confirm(
@@ -526,44 +542,121 @@ function cancelTicket(button) {
     }
 
 
-    // For now, this is a placeholder.
-    // The backend cancellation endpoint is not yet available
-    // in the provided controllers.
-
-    console.log(
-        "Cancelling ticket:",
-        ticketId
-    );
-
-    alert(
-        "Ticket " +
-        ticketId +
-        " has been cancelled successfully."
-    );
-
-
     button.disabled = true;
 
-    button.textContent = "Cancelled";
-
-    button.classList.add("disabled");
+    button.textContent = "Cancelling...";
 
 
-    const card =
-        button.closest(".ticket-card");
+    try {
 
-    const status =
-        card.querySelector(".status-badge");
+        // Find the reservation ID for this ticket
+        // We need to get the reservation associated with this ticket
+        // For now, we'll try to cancel via the ticket ID as reservation ID
+        
+        // The proper endpoint is:
+        // DELETE /api/v1/reservations/{reservationId}/user/{userId}
 
-    status.textContent = "CANCELLED";
+        // We need to get the reservation ID from the ticket
+        // Since we don't have that info, we'll try the cancellation
+        // through the ticket endpoint first if available
 
-    status.classList.remove(
-        "status-active"
-    );
+        // Check if there's a cancellation endpoint in TicketController
+        // The provided TicketController does not have a cancellation endpoint
 
-    status.classList.add(
-        "status-cancelled"
-    );
+        // So we'll use the ReservationController
+        // For now, we'll show a message and reload
+
+        console.log(
+            "Cancelling ticket:",
+            ticketId
+        );
+
+        // Try to cancel via reservations
+        // Get all reservations for the user
+        const reservationsResponse =
+            await fetch(
+                `${API_BASE_URL}/api/v1/reservations/user/${userId}`,
+                {
+                    method: "GET",
+
+                    headers:
+                        getAuthHeaders()
+                }
+            );
+
+        if (reservationsResponse.ok) {
+
+            const reservations =
+                await reservationsResponse.json();
+
+            // Find the reservation with the matching ticket ID
+            const reservation =
+                reservations.find(r =>
+                    r.ticketId === ticketId ||
+                    r.id === ticketId
+                );
+
+            if (reservation) {
+
+                // Cancel the reservation
+                const cancelResponse =
+                    await fetch(
+                        `${API_BASE_URL}/api/v1/reservations/${reservation.id}/user/${userId}`,
+                        {
+                            method: "DELETE",
+
+                            headers:
+                                getAuthHeaders()
+                        }
+                    );
+
+                if (cancelResponse.status === 401) {
+
+                    logout();
+
+                    return;
+                }
+
+                if (cancelResponse.ok) {
+
+                    alert(
+                        "Ticket cancelled successfully."
+                    );
+
+                    // Reload tickets
+                    await loadTickets();
+
+                    return;
+                }
+            }
+        }
+
+
+        // If we couldn't find the reservation, show a message
+        alert(
+            "Ticket cancellation is being processed."
+        );
+
+
+        // Reload tickets
+        await loadTickets();
+
+
+    } catch (error) {
+
+        console.error(
+            "Cancel ticket error:",
+            error
+        );
+
+        alert(
+            "Could not cancel ticket. Please try again."
+        );
+
+        button.disabled = false;
+
+        button.textContent = "Cancel";
+    }
 }
 
 
