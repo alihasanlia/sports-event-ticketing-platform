@@ -182,8 +182,9 @@ function displaySports(sports) {
             const card =
                 document.createElement("a");
 
-            card.href =
-                `sports.html?sport=${sport.name}`;
+            // pass sport identifier as enum-like value (backend expects SPORTTYPE e.g. FOOTBALL)
+            const sportParam = (sport.sportType || sport.name || '').toString().toUpperCase();
+            card.href = `sports.html?sport=${encodeURIComponent(sportParam)}`;
 
             card.className =
                 "sport-card";
