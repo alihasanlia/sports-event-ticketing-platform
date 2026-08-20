@@ -79,7 +79,8 @@ public class AuthService {
         }
 
         CustomUserDetails userDetails = new CustomUserDetails(user);
-        String jwtToken = jwtUtil.generateToken(userDetails, user.getRole().name());
+        // include user id in token claims so frontend can extract UUID directly
+        String jwtToken = jwtUtil.generateToken(userDetails, user.getRole().name(), user.getId().toString());
 
         return new AuthResponse(jwtToken);
     }

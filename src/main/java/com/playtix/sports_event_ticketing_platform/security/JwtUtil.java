@@ -36,9 +36,20 @@ public class JwtUtil {
         return claimsResolver.apply(claims);
     }
 
+    /**
+     * Generate JWT token including role and userId claims.
+     * Keeps previous behavior by providing an overload.
+     */
     public String generateToken(UserDetails userDetails, String role) {
+        return generateToken(userDetails, role, null);
+    }
+
+    public String generateToken(UserDetails userDetails, String role, String userId) {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", role);
+        if (userId != null) {
+            extraClaims.put("userId", userId);
+        }
         return buildToken(extraClaims, userDetails, jwtExpiration);
     }
 
