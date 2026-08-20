@@ -110,11 +110,12 @@
                         required
                 >
                     <option value="">Select subject</option>
-                    <option value="PAYMENT">Payment Problem</option>
-                    <option value="TICKET_CANCELLATION">Ticket Cancellation</option>
-                    <option value="REFUND">Refund Issue</option>
-                    <option value="TICKET_DELIVERY">Ticket Delivery</option>
-                    <option value="OTHER">Other</option>
+                    <!-- Values must match backend ReportSubject enum exactly -->
+                    <option value="PAYMENT_ISSUE">Payment Problem</option>
+                    <option value="UNEXPECTED_CANCELLATION">Unexpected Cancellation</option>
+                    <option value="CHANGE_MATCH_TIME">Match Time Changed</option>
+                    <option value="SEAT_ISSUE">Seat Issue</option>
+                    <option value="ETC">Other</option>
                 </select>
 
             </div>
