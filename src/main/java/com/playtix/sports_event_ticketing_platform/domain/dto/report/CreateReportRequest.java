@@ -11,7 +11,6 @@ public record CreateReportRequest(
     @NotNull(message = "User ID is required")
     UUID userId,
     
-    @NotNull(message = "Ticket ID is required")
     UUID ticketId,
     
     @NotNull(message = "Subject is required")

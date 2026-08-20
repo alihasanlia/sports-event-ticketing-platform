@@ -80,8 +80,10 @@ const urlParams =
         window.location.search
     );
 
+// normalize incoming sport parameter to lowercase key for frontend maps
 const sport =
-    urlParams.get("sport");
+    (urlParams.get("sport") || "")
+        .toLowerCase();
 
 
 /* =====================================================
